@@ -200,6 +200,22 @@ fun WelcomeScreen(
             )
         }
 
+        // Preserve the new application's explicit language selection without
+        // altering the original welcome artwork, layout, feature cards or CTA.
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
+            horizontalArrangement = Arrangement.spacedBy(10.dp)
+        ) {
+            androidx.compose.material3.OutlinedButton(
+                onClick = { onSelectLanguage("ar") },
+                modifier = Modifier.weight(1f)
+            ) { Text("العربية") }
+            androidx.compose.material3.OutlinedButton(
+                onClick = { onSelectLanguage("en") },
+                modifier = Modifier.weight(1f)
+            ) { Text("English") }
+        }
+
         PrimaryActionButton(
             text = stringResource(R.string.welcome_start_now),
             onClick = onContinue,
