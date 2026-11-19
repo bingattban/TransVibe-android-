@@ -1,0 +1,56 @@
+{
+  "xml_valid_files": 15,
+  "xml_invalid": [],
+  "toml_sections": {
+    "versions": 25,
+    "libraries": 37,
+    "plugins": 5
+  },
+  "app_kotlin_files": 71,
+  "original_source_files": 64,
+  "starter_res_file_count": 23,
+  "model_exact_physical_files": [
+    {
+      "name": "ggml-base.bin",
+      "included": false
+    },
+    {
+      "name": "ggml-large-v3-turbo.bin",
+      "included": false
+    },
+    {
+      "name": "ggml-medium.bin",
+      "included": false
+    },
+    {
+      "name": "ggml-small.bin",
+      "included": false
+    },
+    {
+      "name": "ggml-tiny.bin",
+      "included": false
+    },
+    {
+      "name": "moonshine-base-ar.zip",
+      "included": false
+    },
+    {
+      "name": "sensevoice-small-int8.zip",
+      "included": false
+    }
+  ],
+  "native_real_whisper_included": false,
+  "sherpa_aar_included": false,
+  "silero_model_included": false,
+  "excluded_private_and_cache": {
+    "release.keystore": true,
+    "release.properties": true,
+    ".git": true,
+    ".gradle": true,
+    ".cg": true,
+    "build": true,
+    "local.properties": true
+  },
+  "wrapper_matches_uploaded_starter": true,
+  "resource_duplicate_keys": []
+}

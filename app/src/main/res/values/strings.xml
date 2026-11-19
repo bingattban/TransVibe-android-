@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TransVibe</string>
+    <string name="notification_channel_processing">Video Transcription &amp; Subtitling</string>
+    <string name="notification_channel_processing_desc">Shows progress for local on-device transcription and Arabic subtitling</string>
+    <string name="processing_notification_title">TransVibe Processing</string>
+    <string name="action_cancel">Cancel</string>
+    <string name="action_resume">Resume</string>
+</resources>

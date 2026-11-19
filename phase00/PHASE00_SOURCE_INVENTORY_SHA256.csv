@@ -1,0 +1,99 @@
+﻿ZIP relative path,Classification,Uncompressed bytes,Compressed bytes,SHA-256 original member,Unix mode octal,ZIP CRC-32
+TransVibe/ARCHITECTURE.md,Documentation/metadata/licenses,1777,1010,f4511a23f01f67b6794ba49544db84de1d88d322eaa262c9463084709fc939a7,100644,2194437121
+TransVibe/CODE_ON_THE_GO_BUILD.md,Documentation/metadata/licenses,552,367,913b5763eb8a3b28e462d79c1545aef654eb987d302e43eb508ae4239659525d,100644,1854604798
+TransVibe/LICENSES_NOTICES.md,Documentation/metadata/licenses,326,209,10f34a1fcb3126ed4b4fc7ce56ebe8f3e9415dbfc20ad3d2c1b0d9884032b1a1,100644,2665340988
+TransVibe/MIGRATION.md,Documentation/metadata/licenses,587,385,140d3f7ec1f9a32a82ce974ddb9dff1ba92d217c111fd46a1503242e8e3e92fe,100644,4286806409
+TransVibe/MODEL_MANIFEST.md,Documentation/metadata/licenses,849,353,df70a301a0c58548482d950533795978470abdd3bc23dfdc70ba3a1db8f0d65e,100644,169533244
+TransVibe/PERFORMANCE.md,Documentation/metadata/licenses,468,322,0bed75ae4839ecefa30a57c8c83dad22211f20f1ac84b8bed09164c273ff11f4,100644,125240397
+TransVibe/PHASE_REPORT.md,Documentation/metadata/licenses,2312,1331,507be6fa8f9513863de7b01888fb85f9e9de683fc8337633a40e5baab8956285,100644,3736671727
+TransVibe/PRIVACY.md,Documentation/metadata/licenses,428,294,b0b61dedd34012a77f5e70cf9b45da1391fd9cdd62ff15e8beb0b8dde3794c0c,100644,759163044
+TransVibe/README_AR.md,Documentation/metadata/licenses,1144,676,3273dff583acaa731e23b5237ba1b8fe1661de419611434b5ffe3c4168356bb8,100644,2752678515
+TransVibe/README_EN.md,Documentation/metadata/licenses,373,273,ba8bb6f1e830b5d5f3bcfb85236303b8258d9cbcd840645f1e7c96b085cb4f6d,100644,1024561589
+TransVibe/app/build.gradle.kts,Gradle/configuration,4629,1425,5b8bc3be773e995e8f0b73ffae7f8b37a1c1ab3fb3263cdf2dd90c33bd258283,100644,2964290750
+TransVibe/app/proguard-rules.pro,Other,329,169,aa020f4257e908d6207c57d14243e50bbfb3dc1876c1af6f2174b161b0d6d0de,100644,1197082322
+TransVibe/app/src/main/AndroidManifest.xml,Android manifest,2281,838,2403ba5b0500d990ed243694b86d51d68653d2c51ab20849c14f7ed3bc7a3335,100644,3302300972
+TransVibe/app/src/main/cpp/CMakeLists.txt,Documentation/metadata/licenses,1527,658,42df1146afbfa3044329d6bedcf34e5f1e68cde842563ebfcc1d4b3b0a58bfe1,100644,889435300
+TransVibe/app/src/main/cpp/whisper_jni.cpp,C/C++ native bridge sources,6365,1927,358f9a016df322b0b2c3068656026ac414df94ba80decd18f26d1dc1807904ec,100644,1828203154
+TransVibe/app/src/main/java/com/transvibe/app/MainActivity.kt,Kotlin production sources,1876,610,8c25f8988b57886a2916c25e6349a044c9c9c3d1374afe4fb623c2060e75a53e,100644,1818875392
+TransVibe/app/src/main/java/com/transvibe/app/TransVibeApplication.kt,Kotlin production sources,2827,801,53828185475e2d94d8ba3d452f0d8f493f065acb5e68a220a3a5a6011f4f663a,100644,3138117828
+TransVibe/app/src/main/java/com/transvibe/app/asr/AsrRouter.kt,Kotlin production sources,563,294,c629a46957fde5f98766a3a0c012f3c4faa6b0e0ca363fb333be2b553b5d0dbc,100644,787402048
+TransVibe/app/src/main/java/com/transvibe/app/asr/ModelProfiles.kt,Kotlin production sources,4457,768,6cabb4d0e04c33c6861376fbb4d89f2d51e58cbe4394ae77cb4fdd14de3d83cb,100644,2236015658
+TransVibe/app/src/main/java/com/transvibe/app/asr/MoonshineArabicEngine.kt,Kotlin production sources,3572,1126,e35da55f27b3b90ea0ef7658a511be0609cee104089e6964cf04ff5d5b3d8be6,100644,1384216756
+TransVibe/app/src/main/java/com/transvibe/app/asr/SenseVoiceEngine.kt,Kotlin production sources,3675,1174,5f2ab402b6dafcd549a40c903c3a29abc9dd5fa6a0cd68b412447bede9c82dcb,100644,4024063229
+TransVibe/app/src/main/java/com/transvibe/app/asr/WhisperEngine.kt,Kotlin production sources,4859,1343,e416b23657b1d5c1d64744b7a84597eb45b87245c199074b10b59e4d63c0ff9e,100644,2952094435
+TransVibe/app/src/main/java/com/transvibe/app/diagnostics/DiagnosticExporter.kt,Kotlin production sources,1158,520,4e589cba8cd8f8fd9fd7bbbe4470a0c302d8d99e79e5648c80d516a0e257cf92,100644,1031802385
+TransVibe/app/src/main/java/com/transvibe/app/diagnostics/JobTelemetry.kt,Kotlin production sources,615,339,e274ce5780a7ae544210efb87493b768825c4c149c130817a41d760f0ab5f736,100644,1815537563
+TransVibe/app/src/main/java/com/transvibe/app/diagnostics/TinyBenchmarkRunner.kt,Kotlin production sources,2282,869,6058c2d2e2964229b7f0429faf9dc14086e9675497b8fe3b9993682fd23dd9cb,100644,244265498
+TransVibe/app/src/main/java/com/transvibe/app/domain/Contracts.kt,Kotlin production sources,2374,841,d8d05e475e84b4c01b420995e21ef9d9fd57ffa97028e41e1ec5ba445a61ec3e,100644,3182712875
+TransVibe/app/src/main/java/com/transvibe/app/domain/Models.kt,Kotlin production sources,6635,2106,1dc211e77d242f785a6a26f9f020ba384dd03e6f4c9f3cff178f827f93988827,100644,2820339198
+TransVibe/app/src/main/java/com/transvibe/app/domain/Policies.kt,Kotlin production sources,2089,767,aceaac757b52571100da5e5b001debbbbcf1fc6b55eba3f288f65811c276e3dc,100644,2755944731
+TransVibe/app/src/main/java/com/transvibe/app/media/AudioBufferPool.kt,Kotlin production sources,525,288,2ca284b5ac22aeffcf816d04fe6dc7f26447b071744ae22b77b64f3e5e50ddf0,100644,479707079
+TransVibe/app/src/main/java/com/transvibe/app/media/AudioResampler.kt,Kotlin production sources,2469,848,1edc96c9dab616af2bb50c15c91997dfc542492ace1664244e1a38951509423d,100644,4211782559
+TransVibe/app/src/main/java/com/transvibe/app/media/BoundaryReconciler.kt,Kotlin production sources,1885,722,c49c7f14134644d1308ec977062f70db29fdd8da5c9ee823a06775a9f1ae9c94,100644,2673021584
+TransVibe/app/src/main/java/com/transvibe/app/media/FfmpegFallbackBridge.kt,Kotlin production sources,1314,577,0d049045b043aaf12340026904ad81571384b3c549dd0e88d3a9bdc510ef11dd,100644,4051468423
+TransVibe/app/src/main/java/com/transvibe/app/media/MediaCodecAudioDecoder.kt,Kotlin production sources,6249,1695,7774dd2b2741e8d90e486009a25d54f454bf9b5809212b6922c1b380ebad54d9,100644,684580474
+TransVibe/app/src/main/java/com/transvibe/app/media/MediaInspector.kt,Kotlin production sources,4488,1414,96a8e49c44508ee4d53e391f1ccafa2f4a884500891b6bbdc2169c764ac9451e,100644,826384953
+TransVibe/app/src/main/java/com/transvibe/app/media/SileroVadEngine.kt,Kotlin production sources,6818,1756,6ee05003fb9f3763cdc21f399c8ae4d028d01df61c5d31ea4b19884e36a5f89e,100644,3722467855
+TransVibe/app/src/main/java/com/transvibe/app/media/Timebase.kt,Kotlin production sources,772,344,cc5169a41bef8f00a83dae539961f840237d184b092e9224d06f266e5a91256f,100644,3457877142
+TransVibe/app/src/main/java/com/transvibe/app/models/GgmlHeaderValidator.kt,Kotlin production sources,1509,632,3ad3d418ca772e9d045d4ead756747a09109171d50fe6c0634a7e030bc0d80cd,100644,971369477
+TransVibe/app/src/main/java/com/transvibe/app/models/ModelCatalog.kt,Kotlin production sources,6244,1262,0976981fd81d9027b26dabe0111f40e7ca6404bbf54b0a6c1ab10fe031037d2f,100644,3793418617
+TransVibe/app/src/main/java/com/transvibe/app/models/ModelLifecycleManager.kt,Kotlin production sources,22131,4811,a9272ad7a87af0521cce2d19d3cb4ae72b23a5c40a82231293786c55ebf4c104,100644,881252902
+TransVibe/app/src/main/java/com/transvibe/app/models/ZipSecurityValidator.kt,Kotlin production sources,3747,1073,884ba2d8e04a5cc5f161f85a4059d70ae51184d0b6a82ef20368f4213b75a0fc,100644,1353383365
+TransVibe/app/src/main/java/com/transvibe/app/nativebridge/SherpaNativeBridge.kt,Kotlin production sources,5101,1327,8cd721781e2986ed2de6b97d2c0c97ef53c38b7c24646ef3ffc5836c8a394c3f,100644,3749631128
+TransVibe/app/src/main/java/com/transvibe/app/nativebridge/WhisperNativeBridge.kt,Kotlin production sources,934,420,293acf13c26fb4bd163ccec20f1045c622323be1576b85447f296a046d45743f,100644,4286539769
+TransVibe/app/src/main/java/com/transvibe/app/persistence/Daos.kt,Kotlin production sources,2298,665,dd30dc0cb0aadddf582816c5c2dd7b80c7b5117a7718c8b67af36f49b76b2458,100644,1502942606
+TransVibe/app/src/main/java/com/transvibe/app/persistence/Entities.kt,Kotlin production sources,2602,745,8be26065c6dc73abf350ca5d5991f3a8886e32795550ee848b87fea03e3e3b0f,100644,2596264571
+TransVibe/app/src/main/java/com/transvibe/app/persistence/TransVibeDatabase.kt,Kotlin production sources,2589,836,2b7e295d287339c867389a2a78b286d17fb27465a7bcf720224d6fbab7c272d5,100644,3129649965
+TransVibe/app/src/main/java/com/transvibe/app/persistence/UserPreferencesStore.kt,Kotlin production sources,1843,602,632c438cc5e9fbc1e9336107de14c194b55798defe3bb31f4080ff5e2e0c8360,100644,1119253495
+TransVibe/app/src/main/java/com/transvibe/app/platform/DeviceMemoryPreflight.kt,Kotlin production sources,1231,576,d457e15b1109412990ec7c5afe4afcd72dd8af36b0eeb9305c689a4d312b18c3,100644,1685167179
+TransVibe/app/src/main/java/com/transvibe/app/platform/LogSenderBridge.kt,Kotlin production sources,506,315,7706e0cd339c5445df2925d08492d7eee8237e94e8d044f32246f7c370abbcb7,100644,1403879176
+TransVibe/app/src/main/java/com/transvibe/app/platform/SafStorageHelper.kt,Kotlin production sources,756,356,58cbf0baf8a27a5dfa812e09ab56f023ef2da440311ba7cd3cfea9732e590af6,100644,3418680598
+TransVibe/app/src/main/java/com/transvibe/app/platform/ThermalMonitor.kt,Kotlin production sources,624,320,8dab335aeff4c3efe699ae7c0e8efc596cfbf0744ab42da449194b0902365f24,100644,2225803709
+TransVibe/app/src/main/java/com/transvibe/app/platform/TransVibeProcessingService.kt,Kotlin production sources,6137,1839,2fc51b28b37c9bd66a9baf1e7e40898217328721b7b9929cba8b401c8baaf3b4,100644,1525902871
+TransVibe/app/src/main/java/com/transvibe/app/presentation/TransVibeViewModel.kt,Kotlin production sources,19342,4576,1eb532abbbec79d1b0ad8d7e0554d8e898a04db1945a5daced1df82f30d3486c,100644,1972655709
+TransVibe/app/src/main/java/com/transvibe/app/presentation/navigation/TransVibeNavGraph.kt,Kotlin production sources,8878,1486,c7c6ae9df90e40174d4e25cd8da403b1055770ab72ff9fa4582ea5dc2ae834f8,100644,3588197204
+TransVibe/app/src/main/java/com/transvibe/app/presentation/screens/BenchmarkScreen.kt,Kotlin production sources,3934,1336,e443a892a8e9689dcf25e7810b8618061e405caebd6a1baa046a5d1a60c1b53e,100644,1638789639
+TransVibe/app/src/main/java/com/transvibe/app/presentation/screens/HistoryScreen.kt,Kotlin production sources,3268,1022,11d731cff37615ed2d41e38f0373d098ef22c3ad328541b5ea50eea3bde5ff1f,100644,4060935720
+TransVibe/app/src/main/java/com/transvibe/app/presentation/screens/HomeScreen.kt,Kotlin production sources,4503,1261,40eb71e9c3aef6e91115cc1b65a0acccf0e7d0bfac60dd7474375fe953a91673,100644,1015179448
+TransVibe/app/src/main/java/com/transvibe/app/presentation/screens/ModelDetailsScreen.kt,Kotlin production sources,6933,1822,25c30e9d106cc08259819948681d0dfaf4f759d30b0e3f3e03b2ab2214d24ed7,100644,2600083690
+TransVibe/app/src/main/java/com/transvibe/app/presentation/screens/ModelLibraryScreen.kt,Kotlin production sources,3078,992,d4a4e2f5e96ba5b5d71b84711b4c48d97fc08b2d27d24cc37afc9243ba6cfbe8,100644,264032478
+TransVibe/app/src/main/java/com/transvibe/app/presentation/screens/PlayerPreviewScreen.kt,Kotlin production sources,5354,1606,15000614e057fa714fb5e42a41567baba0b9801617076e5b19f9cd1f984df526,100644,2171628031
+TransVibe/app/src/main/java/com/transvibe/app/presentation/screens/ProcessingScreen.kt,Kotlin production sources,3036,1029,8dd89f811c9114362688f7511e502e046d161b498065baf2ef0efd13b5857783,100644,4230395888
+TransVibe/app/src/main/java/com/transvibe/app/presentation/screens/ProcessingSetupScreen.kt,Kotlin production sources,4272,1251,449846dfef6f6d2ecea810d8601079fc04a9cd9dd79d300fbcab31318aa12b34,100644,3241505759
+TransVibe/app/src/main/java/com/transvibe/app/presentation/screens/RecoveryDialog.kt,Kotlin production sources,672,329,8439003def018a480c891ebc9c1bd3ef06969c25f4e95d196838eea89acb2b97,100644,2052170487
+TransVibe/app/src/main/java/com/transvibe/app/presentation/screens/ResultsEditorScreen.kt,Kotlin production sources,5960,1613,2d54f51af891a45d260cfbc2398ea3455c348b07e1e3169b0d738edcc73b0767,100644,1589818004
+TransVibe/app/src/main/java/com/transvibe/app/presentation/screens/SettingsScreen.kt,Kotlin production sources,4359,1301,13df7dc8bd04da8c45ad2fabd16ca984178c86a6f58e0e550a78f67b7b0483c3,100644,3217196112
+TransVibe/app/src/main/java/com/transvibe/app/presentation/screens/TranslationPacksScreen.kt,Kotlin production sources,4365,1155,7a8924026890380047b190d76e2adeb54a9eabc9e6c0bf1308b54b7e4e840aeb,100644,1125884026
+TransVibe/app/src/main/java/com/transvibe/app/presentation/screens/VideoPickerScreen.kt,Kotlin production sources,3606,1209,e4d5d5c3942806ac1bc772023a1f8c7bb14553fb223795a583eb42e8748bb456,100644,1303300070
+TransVibe/app/src/main/java/com/transvibe/app/presentation/screens/WelcomeScreen.kt,Kotlin production sources,2775,902,51a094511bf65b520296d1acb08aae1d8043862ca08d6c2711c5ebdbb980754d,100644,2236959306
+TransVibe/app/src/main/java/com/transvibe/app/presentation/theme/TransVibeTheme.kt,Kotlin production sources,2899,838,42eea8701bef74355320d246b8d3baad2486c9ba6f9faf4bf3580201d0962bbb,100644,2898429857
+TransVibe/app/src/main/java/com/transvibe/app/processing/ProcessingOrchestrator.kt,Kotlin production sources,19575,4464,1f1ce8ba2b39ffbc9ba763abdc614e9b9fdb754a50728620bd30830b1a32ca91,100644,3000933499
+TransVibe/app/src/main/java/com/transvibe/app/subtitles/HallucinationDetector.kt,Kotlin production sources,782,382,4729292786d50c530c51336f437a9cb3fdb5430836221ad8ab6e29390b15f1a0,100644,292183224
+TransVibe/app/src/main/java/com/transvibe/app/subtitles/SrtVttExporter.kt,Kotlin production sources,3525,1037,65510f4be541bbfde8c606da6a24d054fd7c74cb5254b96036758a6f214d675a,100644,1526581422
+TransVibe/app/src/main/java/com/transvibe/app/subtitles/SubtitleCueValidator.kt,Kotlin production sources,1499,546,acec0aef8e67b1ce92a92451fb01c902d582766b3f4738a64a90e44c79eb4c47,100644,1908742650
+TransVibe/app/src/main/java/com/transvibe/app/subtitles/SubtitleEditorRepository.kt,Kotlin production sources,1058,451,86b7daa0c8be197bddad501b229978c0ae1dd65ee0af860d841649953cdcf69d,100644,452477477
+TransVibe/app/src/main/java/com/transvibe/app/testing/FakeAsrEngine.kt,Kotlin production sources,1893,620,06bc777d23f936bba68bb8d61b79d121cd378dfc98817139f8cf4d3e4ff0a55e,100644,4257758424
+TransVibe/app/src/main/java/com/transvibe/app/translation/MlKitTranslationEngine.kt,Kotlin production sources,5640,1450,b75cd87a60c3c5223b42f49741d926638c0bf1832c517b88d5d0c564ba04a0e6,100644,823484236
+TransVibe/app/src/main/java/com/transvibe/app/translation/TranslationPackManager.kt,Kotlin production sources,8091,2289,95fd7d5dcc34fa5114b9e742a544e7566968375d724bd69774e443045b07837b,100644,553632337
+TransVibe/app/src/main/java/com/transvibe/app/translation/TranslationPipeline.kt,Kotlin production sources,5716,1077,3e597f4ed925402f2d0289879549b7a1b86998ce49bd454258b4c81044896f6b,100644,1288179982
+TransVibe/app/src/main/java/com/transvibe/app/translation/TranslationQueue.kt,Kotlin production sources,891,385,2e1b5625bae2278e45ca9bd90c2094c4c9c07875961de414adbf6b539e168fda,100644,749753756
+TransVibe/app/src/main/java/com/transvibe/app/translation/TranslationRoutingPolicy.kt,Kotlin production sources,1938,696,d7aa8cc50d2708dfbcd9b1dbe9a2d8f666ab66e81db79bb4d8ca916621f7851a,100644,2529383293
+TransVibe/app/src/main/res/values/strings.xml,Android XML resources,521,232,a75b765637df708959723727908c03cddba1f150ee8604191218cee7b5f1e957,100644,683202062
+TransVibe/app/src/main/res/values/themes.xml,Android XML resources,278,168,aed1439422acf3009263ce7535a5a2e716db464ab51c9cd5f7f93a05af9a21fb,100644,58347712
+TransVibe/app/src/main/res/values-ar/strings.xml,Android XML resources,588,293,9809512fdf79bded7f75eb60fa0e1162985750f2e2d5787b2ae4b9032c266c8f,100644,2273405946
+TransVibe/app/src/main/res/xml/backup_rules.xml,Android XML resources,175,110,9f010acecb07a9c9e97b4baeaf39519c1058398aa71be817188cae12ba0b9d94,100644,4286330595
+TransVibe/app/src/main/res/xml/data_extraction_rules.xml,Android XML resources,321,145,e07bfe80ca69b06ad66671a47d9ad17e31baa9498fa9e6f7f9e6693cb296b308,100644,2198614979
+TransVibe/app/src/main/res/xml/file_paths.xml,Android XML resources,223,143,d1017cf0c43a581830626d5eb802e48c7ef989d859f64e78e8afc412211d06ea,100644,2356249775
+TransVibe/app/src/test/java/com/transvibe/app/FakePipelineTest.kt,Kotlin JVM unit tests,1153,487,4c4780ac7edbd2ca01b0c0fa97451bf0e306371ed3e2d41d4f3187f5eeae7b7b,100644,969928725
+TransVibe/app/src/test/java/com/transvibe/app/ModelCatalogTest.kt,Kotlin JVM unit tests,1897,627,0f8e28d6806689d3be92337a0030a8b0f95690ff622847410da569aa2f30a45e,100644,3423904556
+TransVibe/app/src/test/java/com/transvibe/app/PoliciesAndProfilesTest.kt,Kotlin JVM unit tests,2767,849,edfc0e31b864b7a997b27bbd3107275aa7195831f603dae76c867c7da55a0f62,100644,1489440158
+TransVibe/app/src/test/java/com/transvibe/app/SubtitleValidationAndExportTest.kt,Kotlin JVM unit tests,1630,538,daf77d34245199f94705687a157f283192be11e3deb7e160b129c3a68d47d2d8,100644,4139161661
+TransVibe/app/src/test/java/com/transvibe/app/TimebaseAndSubtitlesTest.kt,Kotlin JVM unit tests,1526,566,ea68e5a6eeadf09ab79576a91831a8f908ad86824cd76b18876edf207abc9c68,100644,545399311
+TransVibe/app/src/test/java/com/transvibe/app/TranslationRoutingAndFixesTest.kt,Kotlin JVM unit tests,3139,1042,9f4ca1e9d8c0e294af7d6801a057ad6d3e18e4a413fc1da52bde14222e90d876,100644,560257826
+TransVibe/app/src/test/java/com/transvibe/app/ZipSecurityValidatorTest.kt,Kotlin JVM unit tests,1586,478,749ff40a85564579e2c3d5709fa1a97e6248432c4652b4d56dfdfec30e0cebe6,100644,3009965481
+TransVibe/build.gradle.kts,Gradle/configuration,267,95,632ec1bfe71992b9190833e25d6508be89df3968be032814deea355212a2704a,100644,1242104261
+TransVibe/gradle/libs.versions.toml,Gradle/configuration,4244,920,d2df4c0bb145cfa52779f208ce1ae95b5eca3d563bd2cbfb6661153f98794aa2,100644,3268279731
+TransVibe/gradle/wrapper/gradle-wrapper.properties,Gradle/configuration,253,153,d7010368a34c1c06df2bae1a85d8b24c39b2499c74ac892fc7e66d005dbd7b8a,100644,2056220551
+TransVibe/gradle.properties,Gradle/configuration,185,134,0f62c4d499bd9ab6b01f02cb09763c4deb054ee38797ad0659224e49516b0271,100644,131658391
+TransVibe/scripts/fetch_native_deps.sh,Helper scripts,1342,642,e5671a2fc2928cb39b5488d437673137af46664da08832ebdd1c7357957f6644,100755,2549119269
+TransVibe/settings.gradle.kts,Gradle/configuration,591,252,5a536baaf7de1d4da875ea82fa1100bd7f5f6eb7252842b8a1719d050352f236,100644,3128157611

@@ -1,0 +1,93 @@
+TransVibe Phase 01 — Room/KSP 2.8.5 regression evidence — 2026-11-19
+
+--- TEST BEFORE EDIT (EXPECTED RED) ---
+test_all_room_artifacts_pin_the_same_version (__main__.RoomKspCompatibilityContract.test_all_room_artifacts_pin_the_same_version) ... ok
+test_code_on_the_go_toolchain_and_app_id_preserved (__main__.RoomKspCompatibilityContract.test_code_on_the_go_toolchain_and_app_id_preserved) ... ok
+test_database_identity_and_migrations_are_unchanged (__main__.RoomKspCompatibilityContract.test_database_identity_and_migrations_are_unchanged) ... ok
+test_original_unit_returning_suspend_daos_unchanged (__main__.RoomKspCompatibilityContract.test_original_unit_returning_suspend_daos_unchanged) ... ok
+test_room_compiler_has_ksp2_void_signature_fix (__main__.RoomKspCompatibilityContract.test_room_compiler_has_ksp2_void_signature_fix) ... FAIL
+test_room_ksp_wiring_remains_enabled (__main__.RoomKspCompatibilityContract.test_room_ksp_wiring_remains_enabled) ... ok
+
+======================================================================
+FAIL: test_room_compiler_has_ksp2_void_signature_fix (__main__.RoomKspCompatibilityContract.test_room_compiler_has_ksp2_void_signature_fix)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/transvibe_phase01_ksp_room_fix_2026-11-19/TransVibe/phase01/tests/test_room_ksp_compat.py", line 25, in test_room_compiler_has_ksp2_void_signature_fix
+    self.assertEqual('2.8.5', self.catalog['versions']['room'])
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: '2.8.5' != '2.6.1'
+- 2.8.5
++ 2.6.1
+
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.003s
+
+FAILED (failures=1)
+
+--- ALL TESTS AFTER EDIT (GREEN) ---
+test_current_gradle_toolchain_pins_are_stable (test_build_contracts.BuildContracts.test_current_gradle_toolchain_pins_are_stable) ... ok
+test_escaped_newlines_and_whitespace_regex_are_valid_source (test_build_contracts.BuildContracts.test_escaped_newlines_and_whitespace_regex_are_valid_source) ... ok
+test_exporter_constructor_is_defined (test_build_contracts.BuildContracts.test_exporter_constructor_is_defined) ... ok
+test_native_diagnostic_requires_explicit_non_release_opt_in (test_build_contracts.BuildContracts.test_native_diagnostic_requires_explicit_non_release_opt_in) ... ok
+test_preview_separate_and_debug_warning_visible (test_build_contracts.BuildContracts.test_preview_separate_and_debug_warning_visible) ... ok
+test_release_checks_missing_whisper_and_sherpa_aars (test_build_contracts.BuildContracts.test_release_checks_missing_whisper_and_sherpa_aars) ... ok
+test_wrapper_present_with_verified_published_sha (test_build_contracts.BuildContracts.test_wrapper_present_with_verified_published_sha) ... ok
+test_debug_cmake_configuration_is_explicitly_diagnostic (test_build_contracts.NativeCmakeGate.test_debug_cmake_configuration_is_explicitly_diagnostic) ... ok
+test_release_cmake_default_fails_closed (test_build_contracts.NativeCmakeGate.test_release_cmake_default_fails_closed) ... ok
+test_unchanged_original_members_preserve_phase00_hashes (test_build_contracts.Phase00SourceProtection.test_unchanged_original_members_preserve_phase00_hashes) ... ok
+test_all_previous_production_sources_preserved (test_cogo_foundation_merge.CoGoFoundationContract.test_all_previous_production_sources_preserved) ... ok
+test_cogo_icons_and_full_app_both_present (test_cogo_foundation_merge.CoGoFoundationContract.test_cogo_icons_and_full_app_both_present) ... ok
+test_cogo_starter_resources_preserved (test_cogo_foundation_merge.CoGoFoundationContract.test_cogo_starter_resources_preserved) ... ok
+test_old_regression_and_phase_reports_preserved (test_cogo_foundation_merge.CoGoFoundationContract.test_old_regression_and_phase_reports_preserved) ... ok
+test_release_fail_closed_and_no_secret_bundling (test_cogo_foundation_merge.CoGoFoundationContract.test_release_fail_closed_and_no_secret_bundling) ... ok
+test_toolchain_from_user_created_starter (test_cogo_foundation_merge.CoGoFoundationContract.test_toolchain_from_user_created_starter) ... ok
+test_transvibe_identity_and_safe_preview (test_cogo_foundation_merge.CoGoFoundationContract.test_transvibe_identity_and_safe_preview) ... ok
+test_android_9_builtin_kotlin_and_jvm_target (test_cogo_ui_build_compat.CodeOnTheGoUIBuildContracts.test_android_9_builtin_kotlin_and_jvm_target) ... ok
+test_no_app_identity_or_release_gate_regression (test_cogo_ui_build_compat.CodeOnTheGoUIBuildContracts.test_no_app_identity_or_release_gate_regression) ... ok
+test_official_cogo_toolchain_is_selected (test_cogo_ui_build_compat.CodeOnTheGoUIBuildContracts.test_official_cogo_toolchain_is_selected) ... ok
+test_root_buildscript_provides_injected_plugin_kotlin_classpath (test_cogo_ui_build_compat.CodeOnTheGoUIBuildContracts.test_root_buildscript_provides_injected_plugin_kotlin_classpath) ... ok
+test_ui_first_handoff_documents_correct_build_action (test_cogo_ui_build_compat.CodeOnTheGoUIBuildContracts.test_ui_first_handoff_documents_correct_build_action) ... ok
+test_wrapper_distribution_synchronized_with_cogo (test_cogo_ui_build_compat.CodeOnTheGoUIBuildContracts.test_wrapper_distribution_synchronized_with_cogo) ... ok
+test_cotg_handoff_requires_separate_real_install_launch (test_cotg_validation_pack.DeviceValidationCollectorTests.test_cotg_handoff_requires_separate_real_install_launch) ... ok
+test_validation_runs_test_and_both_apk_builds_and_fails_closed (test_cotg_validation_pack.DeviceValidationCollectorTests.test_validation_runs_test_and_both_apk_builds_and_fails_closed) ... ok
+test_validation_script_exists_and_is_valid_posix_shell (test_cotg_validation_pack.DeviceValidationCollectorTests.test_validation_script_exists_and_is_valid_posix_shell) ... ok
+test_release_gate_stays_closed_but_diagnostic_preview_allowed (test_gradle_zipfile_compile_regression.ReleaseNativeGateKotlinDslRegression.test_release_gate_stays_closed_but_diagnostic_preview_allowed) ... ok
+test_release_guard_registers_without_deprecated_delegate (test_gradle_zipfile_compile_regression.ReleaseNativeGateKotlinDslRegression.test_release_guard_registers_without_deprecated_delegate) ... ok
+test_zipfile_import_is_explicit_not_java_extension (test_gradle_zipfile_compile_regression.ReleaseNativeGateKotlinDslRegression.test_zipfile_import_is_explicit_not_java_extension) ... ok
+test_all_room_artifacts_pin_the_same_version (test_room_ksp_compat.RoomKspCompatibilityContract.test_all_room_artifacts_pin_the_same_version) ... ok
+test_code_on_the_go_toolchain_and_app_id_preserved (test_room_ksp_compat.RoomKspCompatibilityContract.test_code_on_the_go_toolchain_and_app_id_preserved) ... ok
+test_database_identity_and_migrations_are_unchanged (test_room_ksp_compat.RoomKspCompatibilityContract.test_database_identity_and_migrations_are_unchanged) ... ok
+test_original_unit_returning_suspend_daos_unchanged (test_room_ksp_compat.RoomKspCompatibilityContract.test_original_unit_returning_suspend_daos_unchanged) ... ok
+test_room_compiler_has_ksp2_void_signature_fix (test_room_ksp_compat.RoomKspCompatibilityContract.test_room_compiler_has_ksp2_void_signature_fix) ... ok
+test_room_ksp_wiring_remains_enabled (test_room_ksp_compat.RoomKspCompatibilityContract.test_room_ksp_wiring_remains_enabled) ... ok
+
+----------------------------------------------------------------------
+Ran 35 tests in 1.090s
+
+OK
+
+--- LOCAL GRADLE ATTEMPT (BLOCKED, NOT A COMPILE RESULT) ---
+Downloading https://services.gradle.org/distributions/gradle-9.6.1-bin.zip
+
+Exception in thread "main" java.net.UnknownHostException: services.gradle.org
+	at java.base/sun.nio.ch.NioSocketImpl.connect(NioSocketImpl.java:567)
+	at java.base/java.net.SocksSocketImpl.connect(SocksSocketImpl.java:327)
+	at java.base/java.net.Socket.connect(Socket.java:751)
+	at java.base/sun.security.ssl.SSLSocketImpl.connect(SSLSocketImpl.java:304)
+	at java.base/sun.net.NetworkClient.doConnect(NetworkClient.java:178)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:539)
+	at java.base/sun.net.www.http.HttpClient.openServer(HttpClient.java:644)
+	at java.base/sun.net.www.protocol.https.HttpsClient.<init>(HttpsClient.java:265)
+	at java.base/sun.net.www.protocol.https.HttpsClient.New(HttpsClient.java:378)
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.getNewHttpClient(AbstractDelegateHttpsURLConnection.java:196)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect0(HttpURLConnection.java:1260)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.plainConnect(HttpURLConnection.java:1146)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.connect(HttpURLConnection.java:1075)
+	at java.base/sun.net.www.protocol.https.AbstractDelegateHttpsURLConnection.connect(AbstractDelegateHttpsURLConnection.java:181)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream0(HttpURLConnection.java:1707)
+	at java.base/sun.net.www.protocol.http.HttpURLConnection.getInputStream(HttpURLConnection.java:1632)
+	at java.base/sun.net.www.protocol.https.HttpsURLConnectionImpl.getInputStream(HttpsURLConnectionImpl.java:223)
+	at org.gradle.wrapper.Install.forceFetch(SourceFile:2)
+	at org.gradle.wrapper.Install$1.call(SourceFile:8)
+	at org.gradle.wrapper.GradleWrapperMain.main(SourceFile:67)

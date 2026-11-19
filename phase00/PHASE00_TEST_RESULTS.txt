@@ -1,0 +1,120 @@
+=== PHASE00 BASELINE (EXIT 0) ===
+test_current_room_database_is_version_3 (__main__.ArchiveAndSourceBaseline.test_current_room_database_is_version_3) ... ok
+test_documented_defect_ids_exist_in_original_report (__main__.ArchiveAndSourceBaseline.test_documented_defect_ids_exist_in_original_report) ... ok
+test_exact_model_catalog_and_seven_profiles (__main__.ArchiveAndSourceBaseline.test_exact_model_catalog_and_seven_profiles) ... ok
+test_identity_and_variants (__main__.ArchiveAndSourceBaseline.test_identity_and_variants) ... ok
+test_shipped_native_and_asr_weights_are_absent (__main__.ArchiveAndSourceBaseline.test_shipped_native_and_asr_weights_are_absent) ... ok
+test_zip_members_integrity_and_path_safety (__main__.ArchiveAndSourceBaseline.test_zip_members_integrity_and_path_safety) ... ok
+
+----------------------------------------------------------------------
+Ran 6 tests in 0.014s
+
+OK
+
+=== DELIBERATELY FAILING REGRESSION TESTS (EXIT 1, NOT PASSED) ===
+test_build_001_exporter_constructor_resolves (__main__.KnownDefectsRegression.test_build_001_exporter_constructor_resolves) ... FAIL
+test_build_002_real_native_whisper_required_for_release (__main__.KnownDefectsRegression.test_build_002_real_native_whisper_required_for_release) ... FAIL
+test_build_003_gradle_wrapper_launchers_are_present (__main__.KnownDefectsRegression.test_build_003_gradle_wrapper_launchers_are_present) ... FAIL
+test_mig_001_existing_legacy_database_name_has_migration_entrypoint (__main__.KnownDefectsRegression.test_mig_001_existing_legacy_database_name_has_migration_entrypoint) ... FAIL
+test_mig_002_existing_legacy_datastore_name_has_migration_entrypoint (__main__.KnownDefectsRegression.test_mig_002_existing_legacy_datastore_name_has_migration_entrypoint) ... FAIL
+test_native_001_sherpa_model_smoke_does_real_init (__main__.KnownDefectsRegression.test_native_001_sherpa_model_smoke_does_real_init) ... FAIL
+test_resource_001_actual_silero_asset_is_packaged (__main__.KnownDefectsRegression.test_resource_001_actual_silero_asset_is_packaged) ... FAIL
+test_trans_001_arabic_requires_explicit_pivot (__main__.KnownDefectsRegression.test_trans_001_arabic_requires_explicit_pivot) ... FAIL
+
+======================================================================
+FAIL: test_build_001_exporter_constructor_resolves (__main__.KnownDefectsRegression.test_build_001_exporter_constructor_resolves)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/transvibe_phase00_work/TransVibe/scripts/phase00_forensic_contracts.py", line 102, in test_build_001_exporter_constructor_resolves
+    self.assertIn('SrtVttExporter(app)', app,
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                  'BUILD-001: undefined SrtVibeExporter(app) remains in AppContainer')
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'SrtVttExporter(app)' not found in 'package com.transvibe.app\n\nimport android.app.Application\nimport com.transvibe.app.asr.AsrRouter\nimport com.transvibe.app.media.AudioResampler\nimport com.transvibe.app.media.MediaCodecAudioDecoder\nimport com.transvibe.app.media.MediaInspector\nimport com.transvibe.app.media.SileroVadEngine\nimport com.transvibe.app.models.ModelLifecycleManager\nimport com.transvibe.app.persistence.TransVibeDatabase\nimport com.transvibe.app.persistence.UserPreferencesStore\nimport com.transvibe.app.platform.ThermalMonitor\nimport com.transvibe.app.processing.ProcessingOrchestrator\nimport com.transvibe.app.subtitles.SrtVttExporter\nimport com.transvibe.app.subtitles.SubtitleEditorRepository\nimport com.transvibe.app.translation.MlKitTranslationEngine\nimport com.transvibe.app.translation.TranslationPackManager\n\nclass AppContainer(app: Application) {\n    val database: TransVibeDatabase by lazy { TransVibeDatabase.getInstance(app) }\n    val preferences: UserPreferencesStore by lazy { UserPreferencesStore(app) }\n    val modelLifecycle: ModelLifecycleManager by lazy { ModelLifecycleManager(app) }\n    val mediaInspector: MediaInspector by lazy { MediaInspector(app) }\n    val audioDecoder: MediaCodecAudioDecoder by lazy { MediaCodecAudioDecoder(app, mediaInspector) }\n    val resampler: AudioResampler by lazy { AudioResampler() }\n    val vadEngine: SileroVadEngine by lazy { SileroVadEngine(app) }\n    val asrRouter: AsrRouter by lazy { AsrRouter() }\n    val translationEngine: MlKitTranslationEngine by lazy { MlKitTranslationEngine() }\n    val translationPackManager: TranslationPackManager by lazy { TranslationPackManager(app) }\n    val subtitleExporter: SrtVibeExporterWrapper by lazy { SrtVibeExporterWrapper(SrtVibeExporter(app)) }\n    val subtitleEditor: SubtitleEditorRepository by lazy { SubtitleEditorRepository() }\n    val thermalMonitor: ThermalMonitor by lazy { ThermalMonitor(app) }\n\n    val orchestrator: ProcessingOrchestrator by lazy {\n        ProcessingOrchestrator(\n            decoder = audioDecoder,\n            resampler = resampler,\n            vadEngine = vadEngine,\n            asrRouter = asrRouter,\n            translationEngine = translationEngine,\n            translationPackManager = translationPackManager,\n            modelLifecycle = modelLifecycle,\n            jobDao = database.jobDao(),\n            transcriptDao = database.transcriptDao()\n        )\n    }\n}\n\nclass SrtVibeExporterWrapper(val exporter: SrtVttExporter)\n\nclass TransVibeApplication : Application() {\n    lateinit var container: AppContainer\n        private set\n\n    override fun onCreate() {\n        super.onCreate()\n        container = AppContainer(this)\n        // E06: Check & auto-download core EN + AR ML Kit packs without blocking startup or ASR models\n        container.translationPackManager.ensureCoreEnArOnFirstLaunch()\n    }\n}\n' : BUILD-001: undefined SrtVibeExporter(app) remains in AppContainer
+
+======================================================================
+FAIL: test_build_002_real_native_whisper_required_for_release (__main__.KnownDefectsRegression.test_build_002_real_native_whisper_required_for_release)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/transvibe_phase00_work/TransVibe/scripts/phase00_forensic_contracts.py", line 122, in test_build_002_real_native_whisper_required_for_release
+    self.assertNotIn('TRANSVIBE_HAS_WHISPER_CPP=0', cmake,
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     'BUILD-002: build can emit diagnostic bridge without real engine')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'TRANSVIBE_HAS_WHISPER_CPP=0' unexpectedly found in 'cmake_minimum_required(VERSION 3.22.1)\nproject(transvibe_native LANGUAGES C CXX)\n\nset(CMAKE_CXX_STANDARD 17)\nset(CMAKE_CXX_STANDARD_REQUIRED ON)\n\n# 16 KB page-size alignment for Android 15+ ARM64 compatibility\nset(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -Wl,-z,max-page-size=16384")\n\nset(WHISPER_CPP_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third_party/whisper.cpp")\n\nif(EXISTS "${WHISPER_CPP_DIR}/CMakeLists.txt")\n    message(STATUS "TransVibe: Building with real whisper.cpp from ${WHISPER_CPP_DIR}")\n    set(WHISPER_BUILD_TESTS OFF CACHE BOOL "" FORCE)\n    set(WHISPER_BUILD_EXAMPLES OFF CACHE BOOL "" FORCE)\n    set(BUILD_SHARED_LIBS OFF CACHE BOOL "" FORCE)\n    add_subdirectory("${WHISPER_CPP_DIR}" whisper_build)\n\n    add_library(transvibe_whisper SHARED whisper_jni.cpp)\n    target_compile_definitions(transvibe_whisper PRIVATE TRANSVIBE_HAS_WHISPER_CPP=1)\n    target_include_directories(transvibe_whisper PRIVATE\n        "${WHISPER_CPP_DIR}/include"\n        "${WHISPER_CPP_DIR}/ggml/include"\n    )\n    target_link_libraries(transvibe_whisper PRIVATE whisper log android)\nelse()\n    message(WARNING "TransVibe: third_party/whisper.cpp not found. Building JNI bridge in unlinked/diagnostic mode (returns NATIVE_LIBRARY_NOT_FOUND until whisper.cpp is fetched via scripts/fetch_native_deps.sh).")\n    add_library(transvibe_whisper SHARED whisper_jni.cpp)\n    target_compile_definitions(transvibe_whisper PRIVATE TRANSVIBE_HAS_WHISPER_CPP=0)\n    target_link_libraries(transvibe_whisper PRIVATE log android)\nendif()\n' : BUILD-002: build can emit diagnostic bridge without real engine
+
+======================================================================
+FAIL: test_build_003_gradle_wrapper_launchers_are_present (__main__.KnownDefectsRegression.test_build_003_gradle_wrapper_launchers_are_present)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/transvibe_phase00_work/TransVibe/scripts/phase00_forensic_contracts.py", line 134, in test_build_003_gradle_wrapper_launchers_are_present
+    self.assertTrue((ROOT / 'gradlew').exists() and
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    (ROOT / 'gradle/wrapper/gradle-wrapper.jar').exists(),
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    'BUILD-003: wrapper launcher and JAR are absent')
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : BUILD-003: wrapper launcher and JAR are absent
+
+======================================================================
+FAIL: test_mig_001_existing_legacy_database_name_has_migration_entrypoint (__main__.KnownDefectsRegression.test_mig_001_existing_legacy_database_name_has_migration_entrypoint)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/transvibe_phase00_work/TransVibe/scripts/phase00_forensic_contracts.py", line 107, in test_mig_001_existing_legacy_database_name_has_migration_entrypoint
+    self.assertIn('processing_jobs.db', db,
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^
+                  'MIG-001: real legacy Room DB filename not handled by new Room builder')
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'processing_jobs.db' not found in 'package com.transvibe.app.persistence\n\nimport android.content.Context\nimport androidx.room.Database\nimport androidx.room.Room\nimport androidx.room.RoomDatabase\nimport androidx.room.migration.Migration\nimport androidx.sqlite.db.SupportSQLiteDatabase\n\n@Database(\n    entities = [\n        JobEntity::class,\n        TranscriptSegmentEntity::class,\n        TranslationEntity::class,\n        CueEditEntity::class,\n        BenchmarkRunEntity::class,\n        FreezeRecordEntity::class\n    ],\n    version = 3,\n    exportSchema = true\n)\nabstract class TransVibeDatabase : RoomDatabase() {\n    abstract fun jobDao(): JobDao\n    abstract fun transcriptDao(): TranscriptDao\n    abstract fun benchmarkDao(): BenchmarkDao\n\n    companion object {\n        val MIGRATION_1_2 = object : Migration(1, 2) {\n            override fun migrate(db: SupportSQLiteDatabase) {\n                db.execSQL(\n                    """\n                    CREATE TABLE IF NOT EXISTS `freeze_records` (\n                        `modelId` TEXT NOT NULL,\n                        `status` TEXT NOT NULL,\n                        `profileVersion` INTEGER NOT NULL,\n                        `approvedByOwner` INTEGER NOT NULL,\n                        `ownerSignoffTimestampMs` INTEGER,\n                        `notes` TEXT NOT NULL,\n                        PRIMARY KEY(`modelId`)\n                    )\n                    """.trimIndent()\n                )\n            }\n        }\n\n        val MIGRATION_2_3 = object : Migration(2, 3) {\n            override fun migrate(db: SupportSQLiteDatabase) {\n                db.execSQL("ALTER TABLE `translations` ADD COLUMN `sourceLanguage` TEXT NOT NULL DEFAULT \'en\'")\n                db.execSQL("ALTER TABLE `translations` ADD COLUMN `englishIntermediateText` TEXT")\n                db.execSQL("ALTER TABLE `translations` ADD COLUMN `stage1Status` TEXT NOT NULL DEFAULT \'NOT_REQUIRED\'")\n                db.execSQL("ALTER TABLE `translations` ADD COLUMN `stage2Status` TEXT NOT NULL DEFAULT \'COMPLETED\'")\n            }\n        }\n\n        @Volatile\n        private var INSTANCE: TransVibeDatabase? = null\n\n        fun getInstance(context: Context): TransVibeDatabase {\n            return INSTANCE ?: synchronized(this) {\n                INSTANCE ?: Room.databaseBuilder(\n                    context.applicationContext,\n                    TransVibeDatabase::class.java,\n                    "transvibe.db"\n                )\n                    .addMigrations(MIGRATION_1_2, MIGRATION_2_3)\n                    .build()\n                    .also { INSTANCE = it }\n            }\n        }\n    }\n}\n' : MIG-001: real legacy Room DB filename not handled by new Room builder
+
+======================================================================
+FAIL: test_mig_002_existing_legacy_datastore_name_has_migration_entrypoint (__main__.KnownDefectsRegression.test_mig_002_existing_legacy_datastore_name_has_migration_entrypoint)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/transvibe_phase00_work/TransVibe/scripts/phase00_forensic_contracts.py", line 112, in test_mig_002_existing_legacy_datastore_name_has_migration_entrypoint
+    self.assertIn('transvibe_preferences', prefs,
+    ~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                  'MIG-002: legacy preferences DataStore name is absent')
+                  ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'transvibe_preferences' not found in 'package com.transvibe.app.persistence\n\nimport android.content.Context\nimport androidx.datastore.preferences.core.booleanPreferencesKey\nimport androidx.datastore.preferences.core.edit\nimport androidx.datastore.preferences.core.stringPreferencesKey\nimport androidx.datastore.preferences.preferencesDataStore\nimport kotlinx.coroutines.flow.Flow\nimport kotlinx.coroutines.flow.map\n\nprivate val Context.dataStore by preferencesDataStore(name = "transvibe_prefs")\n\ndata class UserPreferences(\n    val uiLanguage: String = "ar",\n    val onboardingCompleted: Boolean = false,\n    val defaultModelId: String = "whisper-tiny",\n    val bilingualExportDefault: Boolean = false\n)\n\nclass UserPreferencesStore(private val context: Context) {\n    private object Keys {\n        val UI_LANGUAGE = stringPreferencesKey("ui_language")\n        val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")\n        val DEFAULT_MODEL_ID = stringPreferencesKey("default_model_id")\n        val BILINGUAL_EXPORT = booleanPreferencesKey("bilingual_export")\n    }\n\n    val preferences: Flow<UserPreferences> = context.dataStore.data.map { prefs ->\n        UserPreferences(\n            uiLanguage = prefs[Keys.UI_LANGUAGE] ?: "ar",\n            onboardingCompleted = prefs[Keys.ONBOARDING_COMPLETED] ?: false,\n            defaultModelId = prefs[Keys.DEFAULT_MODEL_ID] ?: "whisper-tiny",\n            bilingualExportDefault = prefs[Keys.BILINGUAL_EXPORT] ?: false\n        )\n    }\n\n    suspend fun setUiLanguage(lang: String) {\n        context.dataStore.edit { it[Keys.UI_LANGUAGE] = lang }\n    }\n\n    suspend fun setOnboardingCompleted(done: Boolean) {\n        context.dataStore.edit { it[Keys.ONBOARDING_COMPLETED] = done }\n    }\n\n    suspend fun setDefaultModelId(modelId: String) {\n        context.dataStore.edit { it[Keys.DEFAULT_MODEL_ID] = modelId }\n    }\n}\n' : MIG-002: legacy preferences DataStore name is absent
+
+======================================================================
+FAIL: test_native_001_sherpa_model_smoke_does_real_init (__main__.KnownDefectsRegression.test_native_001_sherpa_model_smoke_does_real_init)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/transvibe_phase00_work/TransVibe/scripts/phase00_forensic_contracts.py", line 130, in test_native_001_sherpa_model_smoke_does_real_init
+    self.assertNotIn('Result.success(Unit)', block,
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     'NATIVE-001: Sherpa library-presence check is not model init/transcription')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'Result.success(Unit)' unexpectedly found in 'EngineType.SHERPA_MOONSHINE_AR, EngineType.SHERPA_SENSEVOICE -> {\n                if (!SherpaNativeBridge.isSherpaAarPresent()) {\n                    Result.failure(IllegalStateException("NATIVE_LIBRARY_NOT_FOUND: sherpa-onnx AAR not bundled"))\n                } else {\n                    Result.success(Unit)\n                }\n            }' : NATIVE-001: Sherpa library-presence check is not model init/transcription
+
+======================================================================
+FAIL: test_resource_001_actual_silero_asset_is_packaged (__main__.KnownDefectsRegression.test_resource_001_actual_silero_asset_is_packaged)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/transvibe_phase00_work/TransVibe/scripts/phase00_forensic_contracts.py", line 139, in test_resource_001_actual_silero_asset_is_packaged
+    self.assertTrue((ROOT / 'app/src/main/assets/vad/silero_vad.onnx').exists(),
+    ~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                    'RESOURCE-001: Silero is absent; RMS fallback != Silero')
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: False is not true : RESOURCE-001: Silero is absent; RMS fallback != Silero
+
+======================================================================
+FAIL: test_trans_001_arabic_requires_explicit_pivot (__main__.KnownDefectsRegression.test_trans_001_arabic_requires_explicit_pivot)
+----------------------------------------------------------------------
+Traceback (most recent call last):
+  File "/mnt/data/transvibe_phase00_work/TransVibe/scripts/phase00_forensic_contracts.py", line 117, in test_trans_001_arabic_requires_explicit_pivot
+    self.assertNotIn('PRESERVE_ARABIC_TRANSCRIPT', src,
+    ~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+                     'TRANS-001: AR->AR bypass conflicts with owner literal routing policy')
+                     ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+AssertionError: 'PRESERVE_ARABIC_TRANSCRIPT' unexpectedly found in 'package com.transvibe.app.translation\n\nenum class TranslationRouteKind {\n    DIRECT_EN_TO_AR,\n    TWO_STAGE_VIA_ENGLISH,\n    PRESERVE_ARABIC_TRANSCRIPT,\n    UNSUPPORTED\n}\n\nenum class TranslationStageStatus {\n    NOT_REQUIRED,\n    PENDING,\n    COMPLETED,\n    FAILED\n}\n\ndata class TranslationRoutePlan(\n    val sourceLang: String,\n    val targetLang: String,\n    val kind: TranslationRouteKind,\n    val requiredPacks: List<String>\n)\n\n/**\n * Centralized translation routing policy:\n * - en -> ar: 1-stage direct ML Kit translation\n * - ar -> ar: preserves original Arabic transcript without round-trip distortion\n * - non-en (e.g. fr, de, es, tr, ur, ja, ko, zh) -> en -> ar: explicit 2-stage pipeline\n * - unknown / auto / unsupported: fails explicitly rather than guessing English\n */\nobject TranslationRoutingPolicy {\n\n    fun planRoute(sourceLang: String?, targetLang: String = "ar"): TranslationRoutePlan {\n        val src = sourceLang?.trim()?.lowercase()\n        if (src.isNullOrBlank() || src == "auto" || src == "unknown") {\n            return TranslationRoutePlan("unknown", targetLang, TranslationRouteKind.UNSUPPORTED, emptyList())\n        }\n        if (MlKitTranslationEngine.mapCode(src) == null) {\n            return TranslationRoutePlan(src, targetLang, TranslationRouteKind.UNSUPPORTED, emptyList())\n        }\n        if (src == "ar" && targetLang == "ar") {\n            return TranslationRoutePlan("ar", "ar", TranslationRouteKind.PRESERVE_ARABIC_TRANSCRIPT, emptyList())\n        }\n        if (src == "en" && targetLang == "ar") {\n            return TranslationRoutePlan("en", "ar", TranslationRouteKind.DIRECT_EN_TO_AR, listOf("en", "ar"))\n        }\n        if (targetLang == "ar") {\n            return TranslationRoutePlan(src, "ar", TranslationRouteKind.TWO_STAGE_VIA_ENGLISH, listOf(src, "en", "ar"))\n        }\n        return TranslationRoutePlan(src, targetLang, TranslationRouteKind.UNSUPPORTED, emptyList())\n    }\n}\n' : TRANS-001: AR->AR bypass conflicts with owner literal routing policy
+
+----------------------------------------------------------------------
+Ran 8 tests in 0.002s
+
+FAILED (failures=8)
+
+Android assembleDebug/assemblePreview/testDebugUnitTest: NOT RUN — gradle + Android SDK absent.
+Phone instrumentation/ASR: NOT RUN — no device.

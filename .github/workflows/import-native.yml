@@ -1,0 +1,86 @@
+name: Import verified native library as a reviewed PR
+
+on:
+  repository_dispatch:
+    types: [transvibe_native_ready]
+  workflow_dispatch:
+    inputs:
+      native_run_id:
+        description: Successful main-branch GitHub Actions run ID in TransVibe-so-
+        required: true
+        type: string
+
+permissions:
+  contents: write
+  pull-requests: write
+  actions: read
+
+jobs:
+  native-import:
+    name: Validate native artifact and open Pull Request
+    runs-on: ubuntu-24.04
+    concurrency:
+      group: native-import
+      cancel-in-progress: false
+    env:
+      SOURCE_REPO: bingattban/TransVibe-so-
+      SOURCE_RUN_ID: ${{ github.event.client_payload.run_id || inputs.native_run_id }}
+      EXPECTED_SHA: ${{ github.event.client_payload.head_sha || '' }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: true
+      - name: Verify this is a successful approved-source main build
+        run: |
+          set -euo pipefail
+          [[ "$SOURCE_RUN_ID" =~ ^[0-9]+$ ]]
+          gh api "repos/${SOURCE_REPO}/actions/runs/${SOURCE_RUN_ID}" > native-run.json
+          jq -e '
+            .repository.full_name == "bingattban/TransVibe-so-"
+            and .status == "completed"
+            and .conclusion == "success"
+            and .head_branch == "main"
+            and .event == "push"
+          ' native-run.json
+          if [ -n "$EXPECTED_SHA" ]; then
+            test "$(jq -r .head_sha native-run.json)" = "$EXPECTED_SHA"
+          fi
+      - name: Download exactly the verified ARM64 artifact
+        env:
+          GH_TOKEN: ${{ secrets.TRANSVIBE_SO_READ_TOKEN }}
+        run: |
+          set -euo pipefail
+          test -n "$GH_TOKEN" || { echo "::error::Set TRANSVIBE_SO_READ_TOKEN with Actions:read permission for TransVibe-so-"; exit 1; }
+          mkdir -p .native-incoming
+          gh run download "$SOURCE_RUN_ID" \
+            -R "$SOURCE_REPO" \
+            -n transvibe-whisper-arm64-api26 \
+            -D .native-incoming
+      - name: Enforce the Android source SHA used to build the library
+        run: |
+          set -euo pipefail
+          test "$(jq -r .app_source_commit .native-incoming/native-manifest.json)" = "$(git rev-parse HEAD)" || { echo "::error::Native build used a different Android commit; rebuild native on latest main"; exit 1; }
+      - name: Verify checksum, JNI source, ELF and dependencies before copying
+        run: |
+          python3 tools/verify_native_import.py --incoming .native-incoming --app-root app
+      - name: Open a Pull Request instead of directly writing to main
+        run: |
+          set -euo pipefail
+          branch="native/import-run-${SOURCE_RUN_ID}"
+          git switch -c "$branch"
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add app/libs/arm64-v8a/libtransvibe_whisper.so app/libs/native-provenance.json
+          if git diff --cached --quiet; then
+            echo "Already current; no PR required."
+            exit 0
+          fi
+          git commit -m "native: import verified ARM64 Whisper from SO run ${SOURCE_RUN_ID}"
+          git push -u origin "$branch"
+          gh pr create --base main --head "$branch" \
+            --title "Native: verified Whisper ARM64 (SO run ${SOURCE_RUN_ID})" \
+            --body "Verified first-model native artifact from TransVibe-so- run ${SOURCE_RUN_ID}. The PR is automatically eligible for merge ONLY after JVM tests, native contract verification, and successful owner-signed Preview/Release APKs. Physical phone inference acceptance remains a separate gate before model 2."
+          # PRs created by GITHUB_TOKEN do not automatically trigger ordinary
+          # pull_request workflows; workflow_dispatch is the supported exception.
+          gh workflow run android-ci.yml --ref "$branch"

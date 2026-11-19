@@ -1,0 +1,5 @@
+Command: python -m unittest discover -s phase01/tests -p "test_*.py" -q
+----------------------------------------------------------------------
+Ran 51 tests in 0.730s
+
+OK

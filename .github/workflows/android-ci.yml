@@ -1,0 +1,211 @@
+name: TransVibe Android - test, sign and merge
+
+on:
+  pull_request:
+    branches: [main]
+    types: [opened, synchronize, reopened, ready_for_review]
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: transvibe-android-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  source-gate:
+    name: Source and regression tests
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require complete app
+        run: |
+          set -euo pipefail
+          for path in settings.gradle.kts build.gradle.kts app/build.gradle.kts gradlew gradle/wrapper/gradle-wrapper.jar app/src/main/AndroidManifest.xml app/src/main/cpp/whisper_jni.cpp app/src/main/java/com/transvibe/app/nativebridge/WhisperNativeBridge.kt phase01/tests; do
+            test -e "$path" || { echo "::error::Missing $path"; exit 1; }
+          done
+      - name: Regression suite
+        run: python3 -m unittest discover -s phase01/tests -p 'test_*.py' -v
+
+  unit-tests:
+    name: Android JVM tests before APK
+    needs: source-gate
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Provision Android build SDK
+        run: |
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          SDKM="$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager -print -quit)"
+          test -n "$SDKM"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" 'platforms;android-36' 'ndk;28.2.13676358'
+      - name: Run tests without packaging an APK
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:testDebugUnitTest
+
+  native-compat:
+    name: Real ARM64 JNI and native provenance compatibility
+    needs: source-gate
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Require genuine audited Whisper Tiny native library
+        run: |
+          set -euo pipefail
+          test -s app/libs/arm64-v8a/libtransvibe_whisper.so || { echo "::error::Missing real native ARM64 Whisper; no release or merge"; exit 1; }
+          test -s app/libs/native-provenance.json
+          python3 - <<'PY'
+          from pathlib import Path
+          from tempfile import TemporaryDirectory
+          import shutil, sys
+          sys.path.insert(0, 'tools')
+          from verify_native_import import import_verified
+          with TemporaryDirectory() as name:
+              p = Path(name)
+              (p / 'app/libs/arm64-v8a').mkdir(parents=True)
+              shutil.copy2('app/libs/native-provenance.json', p / 'native-manifest.json')
+              shutil.copy2('app/libs/arm64-v8a/libtransvibe_whisper.so', p / 'app/libs/arm64-v8a/libtransvibe_whisper.so')
+              import_verified(p, Path('app'))
+          PY
+
+  signed-apks:
+    name: Create ONLY Preview and Release after all tests
+    needs: [source-gate, unit-tests, native-compat]
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - uses: gradle/actions/setup-gradle@v4
+      - name: Provision Android build SDK
+        run: |
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          SDKM="$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager -print -quit)"
+          test -n "$SDKM"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" 'platforms;android-36' 'ndk;28.2.13676358'
+      - name: Restore signing keystore securely (never publish it)
+        env:
+          SIGNING_KEY_BASE64: ${{ secrets.SIGNING_KEY_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          set -euo pipefail
+          umask 077
+          for k in SIGNING_KEY_BASE64 KEYSTORE_PASSWORD KEY_ALIAS KEY_PASSWORD; do
+            test -n "${!k}" || { echo "::error::Required secret $k not configured"; exit 1; }
+          done
+          printf '%s' "$SIGNING_KEY_BASE64" | base64 --decode > "$RUNNER_TEMP/transvibe.jks"
+          test -s "$RUNNER_TEMP/transvibe.jks"
+          keytool -list -keystore "$RUNNER_TEMP/transvibe.jks" -storepass "$KEYSTORE_PASSWORD" -alias "$KEY_ALIAS" > /dev/null
+          {
+            printf 'storeFile=%s\n' "$RUNNER_TEMP/transvibe.jks"
+            printf 'storePassword=%s\n' "$KEYSTORE_PASSWORD"
+            printf 'keyAlias=%s\n' "$KEY_ALIAS"
+            printf 'keyPassword=%s\n' "$KEY_PASSWORD"
+          } > release.properties
+      - name: Build exactly two signed APK variants
+        run: |
+          chmod +x gradlew
+          ./gradlew --no-daemon :app:assemblePreview :app:assembleRelease
+      - name: Verify signatures, app identities and same certificate
+        env:
+          EXPECTED_CERT_SHA256: ${{ vars.TRANSVIBE_SIGNING_CERT_SHA256 }}
+        run: |
+          set -euo pipefail
+          preview="$(find app/build/outputs/apk/preview -maxdepth 1 -name '*.apk' -print -quit)"
+          release="$(find app/build/outputs/apk/release -maxdepth 1 -name '*.apk' -print -quit)"
+          test -s "$preview" && test -s "$release"
+          test "$(find app/build/outputs/apk/preview app/build/outputs/apk/release -name '*.apk' | wc -l)" -eq 2
+          tools="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
+          signer="$tools/apksigner"
+          aapt="$tools/aapt"
+          test -x "$signer" && test -x "$aapt"
+          "$signer" verify --verbose "$preview" > /dev/null
+          "$signer" verify --verbose "$release" > /dev/null
+          "$aapt" dump badging "$preview" | grep -Fq "package: name='com.transvibe.app.preview'"
+          "$aapt" dump badging "$release" | grep -Fq "package: name='com.transvibe.app'"
+          cert_preview="$("$signer" verify --print-certs "$preview" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1)"
+          cert_release="$("$signer" verify --print-certs "$release" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1)"
+          test -n "$cert_preview" && test "$cert_preview" = "$cert_release"
+          if [ -n "$EXPECTED_CERT_SHA256" ]; then
+            test "${cert_release,,}" = "${EXPECTED_CERT_SHA256,,}" || { echo "::error::Owner signing certificate changed"; exit 1; }
+          fi
+          sha256sum "$preview" "$release" > APK-SHA256SUMS.txt
+          echo "PASS: two APKs, matching signing certificate, distinct package IDs."
+      - name: Package full source for Code On The Go graphical build
+        run: |
+          git archive --format=zip --output=TransVibe-CodeOnTheGo-source.zip HEAD
+          python3 - <<'PY'
+          import zipfile
+          with zipfile.ZipFile('TransVibe-CodeOnTheGo-source.zip') as z:
+              assert 'app/libs/arm64-v8a/libtransvibe_whisper.so' in z.namelist()
+              assert 'app/libs/native-provenance.json' in z.namelist()
+              assert 'release.properties' not in z.namelist()
+          PY
+      - name: Upload exactly two APKs and a source project ZIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: TransVibe-Signed-Preview-Release-CodeOnTheGo
+          path: |
+            app/build/outputs/apk/preview/*.apk
+            app/build/outputs/apk/release/*.apk
+            APK-SHA256SUMS.txt
+            TransVibe-CodeOnTheGo-source.zip
+          if-no-files-found: error
+          retention-days: 30
+      - name: Destroy ephemeral signing material
+        if: always()
+        run: rm -f release.properties "$RUNNER_TEMP/transvibe.jks"
+
+  auto-merge:
+    name: Auto-merge tested same-repository PR (never bypass protections)
+    needs: [source-gate, unit-tests, native-compat, signed-apks]
+    if: >-
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.draft == false) ||
+      (github.event_name == 'workflow_dispatch' &&
+       github.ref != 'refs/heads/main')
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+      pull-requests: write
+      actions: write
+    env:
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      PR_NUMBER: ${{ github.event.pull_request.number || '' }}
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
+    steps:
+      - name: Merge tested head SHA only and require all protections
+        run: |
+          set -euo pipefail
+          if [ -z "$PR_NUMBER" ]; then
+            PR_NUMBER="$(gh pr list -R "$GITHUB_REPOSITORY" --head "$GITHUB_REF_NAME" --base main --state open --json number --jq '.[0].number // empty')"
+          fi
+          test -n "$PR_NUMBER" || { echo "::error::No open matching PR"; exit 1; }
+          pr="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")"
+          test "$(jq -r .head.sha <<< "$pr")" = "$EXPECTED_SHA" || { echo "::error::PR changed since tests"; exit 1; }
+          test "$(jq -r .head.repo.full_name <<< "$pr")" = "$GITHUB_REPOSITORY"
+          test "$(jq -r .base.ref <<< "$pr")" = main
+          test "$(jq -r .draft <<< "$pr")" = false
+          gh pr merge "$PR_NUMBER" -R "$GITHUB_REPOSITORY" --squash --match-head-commit "$EXPECTED_SHA"
+      - name: Trigger post-merge build against merged main SHA
+        run: gh workflow run android-ci.yml -R "$GITHUB_REPOSITORY" --ref main
