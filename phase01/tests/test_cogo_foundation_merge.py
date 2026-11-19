@@ -62,6 +62,21 @@ class CoGoFoundationContract(unittest.TestCase):
                 else:
                     self.assertFalse(binary.exists(), 'Unverified JNI binary cannot be accepted')
                 continue
+            if rel == 'app/src/main/java/com/transvibe/app/domain/Policies.kt':
+                # Only the unsafe Arabic transcript shortcut was removed. All
+                # other policy logic must remain identical to the Phase00 baseline.
+                current = target.read_text(encoding='utf-8')
+                restored = current.replace(
+                    '        // Arabic transcript-only is valid only when the selected engine\n'
+                    '        // actually supports Arabic input; do not bypass the allowlist.\n',
+                    '        if (targetLang == "ar" && requestedSourceLang == "ar") {\n'
+                    '            // Arabic speech -> Arabic transcript-only route is always valid\n'
+                    '            return Result.success(Unit)\n'
+                    '        }\n')
+                self.assertNotEqual(restored, current, 'Routing safety fix missing')
+                self.assertEqual(hashlib.sha256(restored.encode()).hexdigest(),
+                                 item['sha256'], 'Unexpected changes outside routing fix')
+                continue
             if rel == 'app/src/main/java/com/transvibe/app/nativebridge/WhisperNativeBridge.kt':
                 # Approved Phase 01: guard JNI linkage probes if the installed .so
                 # is incompatible; all external method names must remain unchanged.
@@ -129,7 +144,10 @@ class CoGoFoundationContract(unittest.TestCase):
         app=(ROOT/'app/build.gradle.kts').read_text()
         self.assertIn('verifyReleaseNativeDependencies',app)
         self.assertIn('TRANSVIBE_ALLOW_DIAGNOSTIC_JNI=OFF',app)
-        self.assertIn('ZipFile(sherpaArchives.single())',app)
+        self.assertIn('check(hasPrebuiltWhisperJni)',app)
+        self.assertIn('check(hasValidSigningProps)',app)
+        self.assertIn('libs/native-provenance.json',app)
+        self.assertIn('ZipFile(archive)',app)
         self.assertIn('import java.util.zip.ZipFile',app)
         self.assertTrue((ROOT/'app/src/main/cpp/CMakeLists.txt').exists())
         # .git is legitimate within a GitHub Actions checkout. Test only for
