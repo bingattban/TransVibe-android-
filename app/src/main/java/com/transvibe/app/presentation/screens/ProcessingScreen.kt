@@ -1,5 +1,9 @@
 package com.transvibe.app.presentation.screens
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Subtitles
+import com.transvibe.app.presentation.components.ScreenHeroHeader
+
 import android.app.Application
 import android.os.SystemClock
 import androidx.compose.foundation.layout.Arrangement
@@ -59,9 +63,11 @@ fun ProcessingScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(if (isArabic) "حالة المعالجة" else "Processing Status", style = MaterialTheme.typography.headlineMedium)
-        Text(if (isArabic) "تابع تفريغ الصوت ثم الترجمة خطوة بخطوة" else "Track transcription and translation separately",
-            color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        ScreenHeroHeader(
+            title = if (isArabic) "حالة المعالجة" else "Processing Status",
+            subtitle = if (isArabic) "تابع تفريغ الصوت ثم الترجمة خطوة بخطوة" else "Track transcription and translation separately",
+            icon = Icons.Rounded.Subtitles
+        )
         GlassCard(modifier = Modifier.fillMaxWidth(), borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.56f)) {
             val p = progress
             if (p != null) {
