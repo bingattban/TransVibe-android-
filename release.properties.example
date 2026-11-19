@@ -1,0 +1,7 @@
+# KEEP THIS FILE AS AN EXAMPLE ONLY; do not place real credentials in archives.
+# If you use locally managed signing, create a private release.properties file.
+# Store your keystore securely outside the repo and refer to its local path.
+storeFile=path/to/your/private/release.keystore
+storePassword=REPLACE_LOCALLY
+keyAlias=REPLACE_LOCALLY
+keyPassword=REPLACE_LOCALLY

@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">TransVibe</string>
+    <string name="notification_channel_processing">تفريغ وترجمة الفيديو</string>
+    <string name="notification_channel_processing_desc">يعرض تقدم التفريغ الصوتي والترجمة العربية محلياً على الجهاز</string>
+    <string name="processing_notification_title">TransVibe قيد المعالجة</string>
+    <string name="action_cancel">إلغاء</string>
+    <string name="action_resume">استئناف</string>
+</resources>

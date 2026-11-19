@@ -1,0 +1,22 @@
+area,current_pin,requirement_or_constraint,evidence,status
+Gradle,8.11.1,AGP 8.7 requires Gradle >=8.9,https://developer.android.com/build/releases/agp-8-7-0-release-notes,COMPATIBLE_ON_PAPER_NOT_RUN
+AGP,8.7.3,compileSdk 35 is maximum supported API for 8.7,https://developer.android.com/build/releases/agp-8-7-0-release-notes,COMPATIBLE_ON_PAPER_NOT_RUN
+Kotlin,2.0.21,Compose Compiler plugin 2.0.21; KSP 2.0.21-1.0.28,gradle/libs.versions.toml,DECLARED_NOT_RESOLVED
+Java bytecode,17,JDK >=17 required for AGP 8.x,https://developer.android.com/build/jdks,COMPATIBLE_ON_PAPER_NOT_RUN
+Host Java,21.0.12.1,Local Java available but no Gradle distribution or Android SDK,java -version,OBSERVED_NOT_BUILT
+KSP,2.0.21-1.0.28,Must match Kotlin 2.0.21 prefix,gradle/libs.versions.toml,DECLARED_NOT_RESOLVED
+Room,2.6.1,KSP code generation and Room schema v3,app/build.gradle.kts,NOT_RUN
+Android compile SDK,35,SDK platform android-35 must be installed,app/build.gradle.kts,NOT_INSTALLED_HERE
+Android target SDK,35,API 35 foreground service behavior requires device checks,app/build.gradle.kts,DEVICE_NOT_RUN
+Android min SDK,26,API26+; old service compatibility requires validation,app/build.gradle.kts,DEVICE_NOT_RUN
+Android NDK,unlocked,User prior COTG reports r28.2.13676358 but current exact setup unverified,app/build.gradle.kts,NOT_RUN
+CMake,3.22.1,Android NDK CMake 3.22.1 is required by configured externalNativeBuild,app/build.gradle.kts,ANDROID_TOOLCHAIN_NOT_RUN
+ABI,arm64-v8a,32-bit ABI not claimed; 16 KiB page ELF check pending,app/build.gradle.kts,DEVICE_NOT_RUN
+Production Debug,com.transvibe.app,May conflict with production app signer; do NOT force install,app/build.gradle.kts,SIGNATURE_UNKNOWN
+Preview,com.transvibe.app.preview,Separate package sandbox if installed; provider suffix is dynamic,app/build.gradle.kts,CONFIGURED_DEVICE_NOT_RUN
+Release,com.transvibe.app,Needs real whisper.cpp and Sherpa AAR; no owner release signer in repo,app/build.gradle.kts,BLOCKED_AS_INTENDED
+Model weights,none,Seven optional models installed by user after APK,phase00/PHASE00_FORENSIC_REPORT.md,NOT_BUNDLED_AS_DESIGNED
+Whisper source,absent,Native release build cannot ship diagnostic bridge,app/src/main/cpp/CMakeLists.txt,RELEASE_BLOCKED
+Sherpa AAR,absent,Release runtime preflight must block packaging,app/build.gradle.kts,RELEASE_BLOCKED
+Gradle wrapper bootstrap,9.9.0 JAR; 8.11.1 distribution,Authentic SHA matched but mixed bootstrapping unvalidated,gradle/wrapper/WRAPPER_PROVENANCE.md,BLOCKED_BY_NETWORK
+Code On The Go,unknown local bundled Gradle,User device should use pinned wrapper or Gradle 8.11.1; do not assume 9.6.1 compatible,phase01/PHASE01_CODE_ON_THE_GO.md,NOT_RUN
