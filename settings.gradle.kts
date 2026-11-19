@@ -1,9 +1,10 @@
 pluginManagement {
   repositories {
-    // Resolve recent KSP versions directly from Maven Central first.
-    mavenCentral()
-    google()
+    // Google supplies AGP; the plugin portal resolves Android's marker.
+    // KSP alone is mapped below to the published Maven Central module.
     gradlePluginPortal()
+    google()
+    mavenCentral()
   }
   resolutionStrategy {
     eachPlugin {
