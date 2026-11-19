@@ -1,6 +1,25 @@
 package com.transvibe.app.presentation.navigation
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.core.tween
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Surface
+import androidx.compose.material3.Text
 import androidx.compose.material3.Scaffold
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -9,6 +28,7 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.transvibe.app.presentation.TransVibeViewModel
@@ -26,7 +46,7 @@ import com.transvibe.app.presentation.screens.SettingsScreen
 import com.transvibe.app.presentation.screens.TranslationPacksScreen
 import com.transvibe.app.presentation.screens.VideoPickerScreen
 import com.transvibe.app.presentation.screens.WelcomeScreen
-import com.transvibe.app.presentation.theme.TransVibeColors
+import com.transvibe.app.presentation.theme.TransVibeBackground
 
 object Routes {
     const val WELCOME = "welcome"
@@ -53,13 +73,41 @@ fun TransVibeNavGraph(
 ) {
     val navController = rememberNavController()
     val errorMsg by viewModel.recoveryError.collectAsState()
+    val backStack by navController.currentBackStackEntryAsState()
+    val currentRoute = backStack?.destination?.route
+    val topLevelRoutes = setOf(Routes.HOME, Routes.MODELS, Routes.HISTORY, Routes.SETTINGS)
+    val openSection: (String) -> Unit = { destination ->
+        if (currentRoute != destination) {
+            navController.navigate(destination) {
+                popUpTo(Routes.HOME) { saveState = true }
+                launchSingleTop = true
+                restoreState = true
+            }
+        }
+    }
     val startDest = when {
         !initialNotificationJobId.isNullOrBlank() -> "results/$initialNotificationJobId"
         onboardingDone -> Routes.HOME
         else -> Routes.WELCOME
     }
 
-    Scaffold(containerColor = TransVibeColors.MidnightNavy) { innerPadding ->
+    Scaffold(
+        containerColor = MaterialTheme.colorScheme.background,
+        bottomBar = {
+            AnimatedVisibility(
+                visible = currentRoute in topLevelRoutes,
+                enter = fadeIn(animationSpec = tween(200)),
+                exit = fadeOut(animationSpec = tween(160))
+            ) {
+                TransVibeBottomNavigation(
+                    currentRoute = currentRoute,
+                    isArabic = isArabic,
+                    onNavigate = openSection
+                )
+            }
+        }
+    ) { innerPadding ->
+        TransVibeBackground {
         NavHost(
             navController = navController,
             startDestination = startDest,
@@ -204,6 +252,7 @@ fun TransVibeNavGraph(
                 )
             }
         }
+        }
     }
 
     errorMsg?.let { msg ->
@@ -212,5 +261,50 @@ fun TransVibeNavGraph(
             isArabic = isArabic,
             onDismiss = { viewModel.dismissError() }
         )
+    }
+}
+
+/** Persistent four-section navigation; hidden during processing and subtitle editing. */
+@Composable
+private fun TransVibeBottomNavigation(
+    currentRoute: String?,
+    isArabic: Boolean,
+    onNavigate: (String) -> Unit
+) {
+    val scheme = MaterialTheme.colorScheme
+    Surface(
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp),
+        shape = RoundedCornerShape(26.dp),
+        color = scheme.surfaceContainer,
+        shadowElevation = 6.dp,
+        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.65f))
+    ) {
+        NavigationBar(
+            containerColor = androidx.compose.ui.graphics.Color.Transparent,
+            tonalElevation = 0.dp
+        ) {
+            val destinations = listOf(
+                Triple(Routes.HOME, if (isArabic) "الرئيسية" else "Home", Icons.Filled.Home),
+                Triple(Routes.MODELS, if (isArabic) "النماذج" else "Models", Icons.Filled.Tune),
+                Triple(Routes.HISTORY, if (isArabic) "مشاريعي" else "History", Icons.Filled.History),
+                Triple(Routes.SETTINGS, if (isArabic) "الإعدادات" else "Settings", Icons.Filled.Settings)
+            )
+            destinations.forEach { (route, label, icon) ->
+                NavigationBarItem(
+                    selected = route == currentRoute,
+                    onClick = { onNavigate(route) },
+                    icon = { Icon(icon, contentDescription = label) },
+                    label = { Text(label, maxLines = 1) },
+                    alwaysShowLabel = true,
+                    colors = NavigationBarItemDefaults.colors(
+                        selectedIconColor = scheme.onPrimaryContainer,
+                        selectedTextColor = scheme.primary,
+                        indicatorColor = scheme.primaryContainer,
+                        unselectedIconColor = scheme.onSurfaceVariant,
+                        unselectedTextColor = scheme.onSurfaceVariant
+                    )
+                )
+            }
+        }
     }
 }
