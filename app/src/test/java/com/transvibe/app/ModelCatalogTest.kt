@@ -41,6 +41,16 @@ class ModelCatalogTest {
     }
 
     @Test
+    fun arabicTranscriptOnlyStillRequiresModelArabicSupport() {
+        val senseVoice = ModelCatalog.findById(ModelCatalog.SENSEVOICE_SMALL_INT8_ID)!!
+        val whisperTiny = ModelCatalog.findById(ModelCatalog.WHISPER_TINY_ID)!!
+        // Changing translation target never grants an ASR language to an engine.
+        assertTrue(RoutingPolicy.resolveLanguageCompatibility(senseVoice, "ar", "ar").isFailure)
+        assertTrue(RoutingPolicy.resolveLanguageCompatibility(senseVoice, "ar", "en").isFailure)
+        assertTrue(RoutingPolicy.resolveLanguageCompatibility(whisperTiny, "ar", "ar").isSuccess)
+    }
+
+    @Test
     fun senseVoiceDoesNotInferArabicAsrSupport() {
         val sv = ModelCatalog.findById(ModelCatalog.SENSEVOICE_SMALL_INT8_ID)!!
         assertFalse(sv.supportedLanguages.contains("ar"))
