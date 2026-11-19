@@ -9,6 +9,10 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
@@ -45,16 +49,19 @@ fun HomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("TransVibe", color = TransVibeColors.ElectricCyan, style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
+            Text("TransVibe", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineMedium)
             OutlinedButton(onClick = onSettings) {
                 Text(if (isArabic) "الإعدادات" else "Settings")
             }
         }
 
+        Text(if (isArabic) "خصوصيتك أولا: تفريغ وترجمة على جهازك" else "Your video stays on your device",
+            color = MaterialTheme.colorScheme.onSurfaceVariant)
         if (BuildConfig.DIAGNOSTIC_NATIVE_BUILD_SKIPPED && !WhisperNativeBridge.isAvailable()) {
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
@@ -62,7 +69,7 @@ fun HomeScreen(
                         "نسخة اختبار Code On The Go: لم تُكتشف مكتبة Whisper JNI أصلية متوافقة. ضع ملف libtransvibe_whisper.so المترجم لأندرويد ARM64 في app/libs/arm64-v8a/ قبل البناء. لا يثبت وجود الملف وحده صحة التعرف الصوتي."
                     else
                         "Code On The Go diagnostic build: compatible Whisper JNI is not linked. Place the Android ARM64 libtransvibe_whisper.so in app/libs/arm64-v8a/ before building. Presence alone does not prove real ASR works.",
-                    color = TransVibeColors.TextSecondary
+                    color = MaterialTheme.colorScheme.onSurfaceVariant
                 )
             }
         }
@@ -76,13 +83,23 @@ fun HomeScreen(
             Button(
                 onClick = onNewVideo,
                 modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = TransVibeColors.ElectricCyan)
+                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
             ) {
-                Text(if (isArabic) "اختيار فيديو" else "Pick Video", color = TransVibeColors.MidnightNavy)
+                Text(if (isArabic) "اختيار فيديو" else "Pick Video", color = MaterialTheme.colorScheme.onPrimary)
             }
         }
 
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        GlassCard(modifier = Modifier.fillMaxWidth(),
+            borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.35f)) {
+            Text(if (isArabic) "النماذج المثبتة: $readyCount / 7"
+                else "Models installed: $readyCount / 7",
+                color = MaterialTheme.colorScheme.primary,
+                style = MaterialTheme.typography.titleMedium)
+            Text(if (isArabic) "المشاريع المحفوظة: ${jobs.size}"
+                else "Saved projects: ${jobs.size}",
+                color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+                Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             OutlinedButton(onClick = onModels, modifier = Modifier.weight(1f)) {
                 Text(if (isArabic) "النماذج ($readyCount/7)" else "Models ($readyCount/7)")
             }
@@ -101,15 +118,15 @@ fun HomeScreen(
             text = if (isArabic) "أحدث المشاريع" else "Recent Projects",
             style = androidx.compose.material3.MaterialTheme.typography.titleMedium
         )
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(jobs.take(5), key = { it.jobId }) { job ->
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            jobs.take(5).forEach { job ->
                 GlassCard(
                     modifier = Modifier
                         .fillMaxWidth()
                         .clickable { onOpenJob(job.jobId) }
                 ) {
-                    Text(job.mediaTitle, color = TransVibeColors.TextPrimary)
-                    Text("${job.actualModelId} • ${job.state}", color = TransVibeColors.TextSecondary)
+                    Text(job.mediaTitle, color = MaterialTheme.colorScheme.onSurface, style = MaterialTheme.typography.titleMedium)
+                    Text("${job.actualModelId} • ${job.state}", color = MaterialTheme.colorScheme.onSurfaceVariant)
                 }
             }
         }
