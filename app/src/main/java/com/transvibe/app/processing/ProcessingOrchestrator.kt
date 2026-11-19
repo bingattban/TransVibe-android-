@@ -299,7 +299,7 @@ class ProcessingOrchestrator(
                 jobDao.updateProgress(jobId, JobState.FAILED.name, resumeFromUs, System.currentTimeMillis())
                 _progress.value = ProcessingProgress(
                     jobId, JobState.FAILED, "Audio transcription failed",
-                    0L, totalAudioMs, System.currentTimeMillis() - startedMs,
+                    if (decodedFrames.get() > 0) totalAudioMs else 0L, totalAudioMs, System.currentTimeMillis() - startedMs,
                     asrEngine.engineId, model.modelId, warningMessage = message
                 )
                 return Result.failure(IllegalStateException(message))
