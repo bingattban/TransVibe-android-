@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -21,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.transvibe.app.BuildConfig
 import com.transvibe.app.presentation.TransVibeViewModel
+import com.transvibe.app.persistence.UserPreferences
 import com.transvibe.app.presentation.theme.GlassCard
 import com.transvibe.app.presentation.theme.TransVibeColors
 
@@ -34,6 +38,8 @@ fun SettingsScreen(
 ) {
     val app = LocalContext.current.applicationContext as Application
     val cacheMb by viewModel.cacheSizeMb.collectAsState()
+    val prefs by viewModel.preferences.collectAsState(initial = UserPreferences())
+    val colors = MaterialTheme.colorScheme
     var diagPreview by remember { mutableStateOf<String?>(null) }
 
     LaunchedEffect(Unit) {
@@ -43,7 +49,8 @@ fun SettingsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(16.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 16.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -59,6 +66,31 @@ fun SettingsScreen(
                 }
                 OutlinedButton(onClick = { viewModel.setUiLanguage("en") }, modifier = Modifier.weight(1f)) {
                     Text("English")
+                }
+            }
+        }
+
+        GlassCard(modifier = Modifier.fillMaxWidth(), borderColor = colors.primary.copy(alpha = 0.5f)) {
+            Text(if (isArabic) "المظهر والألوان" else "Theme & appearance",
+                style = MaterialTheme.typography.titleMedium, color = colors.onSurface)
+            Text(if (isArabic) "اختر الوضع المناسب، وسيُحفظ اختيارك تلقائيا."
+                else "Choose a theme; your selection is saved automatically.",
+                style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
+            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
+                listOf(
+                    Triple("system", if (isArabic) "النظام" else "System", "system"),
+                    Triple("light", if (isArabic) "نهاري" else "Light", "light"),
+                    Triple("dark", if (isArabic) "ليلي" else "Dark", "dark")
+                ).forEach { (mode, label, _) ->
+                    OutlinedButton(
+                        onClick = { viewModel.setThemeMode(mode) },
+                        modifier = Modifier.weight(1f),
+                        border = androidx.compose.foundation.BorderStroke(
+                            if (prefs.themeMode == mode) 2.dp else 1.dp,
+                            if (prefs.themeMode == mode) colors.primary else colors.outlineVariant
+                        ),
+                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 3.dp, vertical = 5.dp)
+                    ) { Text(label, maxLines = 1) }
                 }
             }
         }
@@ -87,12 +119,12 @@ fun SettingsScreen(
 
         diagPreview?.let {
             GlassCard(modifier = Modifier.fillMaxWidth()) {
-                Text(it, color = TransVibeColors.TextSecondary)
+                Text(it, color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
 
         GlassCard(modifier = Modifier.fillMaxWidth()) {
-            Text("TransVibe", color = TransVibeColors.ElectricCyan)
+            Text("TransVibe", color = androidx.compose.material3.MaterialTheme.colorScheme.primary)
             Text("Package: ${BuildConfig.APPLICATION_ID}")
             Text("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
             if (BuildConfig.DIAGNOSTIC_NATIVE_ALLOWED) {

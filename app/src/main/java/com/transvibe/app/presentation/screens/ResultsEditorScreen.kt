@@ -63,8 +63,8 @@ fun ResultsEditorScreen(
 
         jobMeta?.let { meta ->
             GlassCard(modifier = Modifier.fillMaxWidth()) {
-                Text("Engine: ${meta.actualEngineId} | Model: ${meta.actualModelId}", color = TransVibeColors.ElectricCyan)
-                Text("Cues: ${cues.size} | SHA: ${meta.modelSha256?.take(12) ?: "local"}", color = TransVibeColors.TextSecondary)
+                Text("Engine: ${meta.actualEngineId} | Model: ${meta.actualModelId}", color = androidx.compose.material3.MaterialTheme.colorScheme.primary)
+                Text("Cues: ${cues.size} | SHA: ${meta.modelSha256?.take(12) ?: "local"}", color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
 
@@ -106,12 +106,12 @@ fun ResultsEditorScreen(
                 GlassCard(modifier = Modifier.fillMaxWidth()) {
                     Text(
                         "${SrtVttExporter.formatTimestamp(cue.startUs, ',')} -> ${SrtVttExporter.formatTimestamp(cue.endUs, ',')}",
-                        color = TransVibeColors.ElectricCyan
+                        color = androidx.compose.material3.MaterialTheme.colorScheme.primary
                     )
                     if (cue.warnings.isNotEmpty()) {
-                        Text(cue.warnings.joinToString(), color = TransVibeColors.WarmGold)
+                        Text(cue.warnings.joinToString(), color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)
                     }
-                    Text(cue.effectiveOriginal, color = TransVibeColors.TextSecondary)
+                    Text(cue.effectiveOriginal, color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant)
                     OutlinedTextField(
                         value = cue.effectiveTranslation ?: "",
                         onValueChange = { viewModel.editCue(cue.cueId, null, it) },

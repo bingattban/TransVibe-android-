@@ -120,7 +120,7 @@ fun PlayerPreviewScreen(
 
         Text(
             text = if (isArabic) "اضغط على أي سطر للانتقال إليه:" else "Tap a cue to seek:",
-            color = TransVibeColors.TextSecondary
+            color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
         )
         LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
             items(cues, key = { it.cueId }) { cue ->
@@ -129,7 +129,7 @@ fun PlayerPreviewScreen(
                         .fillMaxWidth()
                         .clickable { player.seekTo(cue.startUs / 1000L) }
                 ) {
-                    Text(SrtVttExporter.formatTimestamp(cue.startUs, ','), color = TransVibeColors.ElectricCyan)
+                    Text(SrtVttExporter.formatTimestamp(cue.startUs, ','), color = androidx.compose.material3.MaterialTheme.colorScheme.primary)
                     Text(cue.effectiveTranslation ?: cue.effectiveOriginal)
                 }
             }

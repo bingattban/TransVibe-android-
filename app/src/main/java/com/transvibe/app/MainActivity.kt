@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
             val layoutDir = if (prefs.uiLanguage == "ar") LayoutDirection.Rtl else LayoutDirection.Ltr
 
             CompositionLocalProvider(LocalLayoutDirection provides layoutDir) {
-                TransVibeTheme {
+                TransVibeTheme(themeMode = prefs.themeMode) {
                     TransVibeNavGraph(
                         viewModel = vm,
                         isArabic = prefs.uiLanguage == "ar",

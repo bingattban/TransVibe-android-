@@ -52,17 +52,17 @@ fun HistoryScreen(
                         .clickable { onOpenJob(job.jobId) }
                 ) {
                     Text(job.mediaTitle)
-                    Text("${job.actualModelId} • ${job.state}", color = TransVibeColors.TextSecondary)
+                    Text("${job.actualModelId} • ${job.state}", color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (job.state == JobState.INTERRUPTED_RECOVERABLE.name || job.state == JobState.FAILED.name) {
                             OutlinedButton(onClick = {
                                 viewModel.startProcessing(app, job.sourceLanguageSetting, job.targetLanguageSetting, resumeJobId = job.jobId)
                             }) {
-                                Text(if (isArabic) "استئناف" else "Resume", color = TransVibeColors.ElectricCyan)
+                                Text(if (isArabic) "استئناف" else "Resume", color = androidx.compose.material3.MaterialTheme.colorScheme.primary)
                             }
                         }
                         OutlinedButton(onClick = { viewModel.deleteJob(job.jobId) }) {
-                            Text(if (isArabic) "حذف المشروع" else "Delete", color = TransVibeColors.CoralError)
+                            Text(if (isArabic) "حذف المشروع" else "Delete", color = androidx.compose.material3.MaterialTheme.colorScheme.error)
                         }
                     }
                 }

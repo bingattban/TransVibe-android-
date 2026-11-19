@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Button
 import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.OutlinedButton
@@ -53,23 +56,41 @@ fun ProcessingScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Text(if (isArabic) "حالة المعالجة" else "Processing Status", style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
-        GlassCard(modifier = Modifier.fillMaxWidth()) {
+        Text(if (isArabic) "حالة المعالجة" else "Processing Status", style = MaterialTheme.typography.headlineMedium)
+        Text(if (isArabic) "تابع تفريغ الصوت ثم الترجمة خطوة بخطوة" else "Track transcription and translation separately",
+            color = MaterialTheme.colorScheme.onSurfaceVariant, style = MaterialTheme.typography.bodySmall)
+        GlassCard(modifier = Modifier.fillMaxWidth(), borderColor = MaterialTheme.colorScheme.primary.copy(alpha = 0.56f)) {
             val p = progress
             if (p != null) {
-                Text("Stage: ${p.stageLabel} (${p.state.name})")
+                Text(
+                    if (p.state == JobState.TRANSLATING)
+                        (if (isArabic) "ترجمة النصوص" else "Translating subtitles")
+                    else (if (isArabic) "تفريغ الصوت" else "Audio transcription"),
+                    style = MaterialTheme.typography.titleLarge
+                )
+                Text("Stage: ${p.stageLabel} (${p.state.name})", color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    style = MaterialTheme.typography.bodySmall)
                 Text("Engine: ${p.actualEngineId} | Model: ${p.actualModelId}")
                 val ratio = if (p.totalAudioMs > 0) (p.processedAudioMs.toFloat() / p.totalAudioMs).coerceIn(0f, 1f) else 0f
+                Text(if (isArabic) "تقدم تفريغ الصوت" else "Audio transcription progress",
+                    style = MaterialTheme.typography.labelLarge)
                 LinearProgressIndicator(progress = { ratio }, modifier = Modifier.fillMaxWidth())
                 val isActive = p.state != JobState.COMPLETED && p.state != JobState.FAILED &&
                     p.state != JobState.CANCELLED && p.state != JobState.INTERRUPTED_RECOVERABLE
                 val elapsed = p.elapsedMs + if (isActive) (clockMs - progressTimestamp).coerceAtLeast(0L) else 0L
-                Text("${p.processedAudioMs / 1000}s / ${p.totalAudioMs / 1000}s | Elapsed: ${elapsed / 1000}s")
+                Text("${p.processedAudioMs / 1000}s / ${p.totalAudioMs / 1000}s", style = MaterialTheme.typography.bodySmall)
+                Text(if (isArabic) "الوقت المنقضي: ${elapsed / 1000} ثانية" else "Elapsed: ${elapsed / 1000}s",
+                    style = MaterialTheme.typography.titleMedium)
                 if (p.state == JobState.TRANSLATING) {
-                    Text(if (isArabic) "مرحلة الترجمة مستقلة عن اكتمال الصوت" else "Translation continues after audio processing")
+                    Text(if (isArabic)
+                        "مرحلة الترجمة مستقلة عن اكتمال الصوت، ولا تعني نسبة 100٪ اكتمال النتائج."
+                        else "Translation continues after audio reaches 100%; output is not yet complete.",
+                        color = MaterialTheme.colorScheme.tertiary, style = MaterialTheme.typography.bodySmall)
+                    LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.tertiary)
                 }
                 if (p.state == JobState.FAILED || p.state == JobState.INTERRUPTED_RECOVERABLE) {
-                    Text(p.warningMessage ?: if (isArabic) "توقفت المعالجة؛ راجع حزم الترجمة" else "Processing stopped; check translation packs")
+                    Text(p.warningMessage ?: if (isArabic) "توقفت المعالجة؛ راجع حزم الترجمة" else "Processing stopped; check translation packs",
+                        color = MaterialTheme.colorScheme.error)
                 }
             } else {
                 Text(if (isArabic) "جاري التهيئة..." else "Initializing...")
@@ -77,7 +98,7 @@ fun ProcessingScreen(
         }
 
         if (jobId != null && progress?.state in setOf(JobState.COMPLETED, JobState.FAILED, JobState.INTERRUPTED_RECOVERABLE)) {
-            Button(onClick = { onOpenResults(jobId!!) }, modifier = Modifier.fillMaxWidth()) {
+            Button(onClick = { onOpenResults(jobId!!) }, modifier = Modifier.fillMaxWidth().height(52.dp), shape = RoundedCornerShape(16.dp)) {
                 Text(if (isArabic) "عرض النص المحفوظ وإعادة الترجمة" else "Open saved transcript & retry translation")
             }
         } else {

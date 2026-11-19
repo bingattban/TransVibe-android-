@@ -4,6 +4,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyColumn
@@ -35,6 +37,7 @@ fun TranslationPacksScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -57,8 +60,8 @@ fun TranslationPacksScreen(
             items(packs, key = { it.code }) { pack ->
                 val stateColor = when (pack.state) {
                     PackTransferState.INSTALLED -> TransVibeColors.EmeraldSuccess
-                    PackTransferState.FAILED -> TransVibeColors.CoralError
-                    else -> TransVibeColors.WarmGold
+                    PackTransferState.FAILED -> androidx.compose.material3.MaterialTheme.colorScheme.error
+                    else -> androidx.compose.material3.MaterialTheme.colorScheme.tertiary
                 }
                 GlassCard(modifier = Modifier.fillMaxWidth()) {
                     Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
@@ -66,13 +69,13 @@ fun TranslationPacksScreen(
                         if (pack.isCore) {
                             Text(
                                 if (isArabic) "أساسية" else "CORE",
-                                color = TransVibeColors.ElectricCyan
+                                color = androidx.compose.material3.MaterialTheme.colorScheme.primary
                             )
                         }
                     }
                     Text("Status: ${pack.state.name} | Offline: ${pack.offlineReady}", color = stateColor)
-                    Text(pack.sizeLabel, color = TransVibeColors.TextSecondary)
-                    pack.lastError?.let { Text(it, color = TransVibeColors.CoralError) }
+                    Text(pack.sizeLabel, color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant)
+                    pack.lastError?.let { Text(it, color = androidx.compose.material3.MaterialTheme.colorScheme.error) }
 
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                         if (!pack.offlineReady) {
@@ -84,7 +87,7 @@ fun TranslationPacksScreen(
                                 Text(if (isArabic) "فحص التحديث" else "Check Update")
                             }
                             OutlinedButton(onClick = { viewModel.deleteTranslationPack(pack.code) }) {
-                                Text(if (isArabic) "حذف" else "Delete", color = TransVibeColors.CoralError)
+                                Text(if (isArabic) "حذف" else "Delete", color = androidx.compose.material3.MaterialTheme.colorScheme.error)
                             }
                         }
                     }

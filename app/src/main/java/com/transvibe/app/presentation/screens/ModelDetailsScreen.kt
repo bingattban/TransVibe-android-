@@ -6,6 +6,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.AlertDialog
@@ -56,6 +58,7 @@ fun ModelDetailsScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -66,7 +69,7 @@ fun ModelDetailsScreen(
 
         GlassCard(modifier = Modifier.fillMaxWidth()) {
             Text("ID: ${model.modelId}")
-            Text("File: ${model.physicalFileName}", color = TransVibeColors.ElectricCyan)
+            Text("File: ${model.physicalFileName}", color = androidx.compose.material3.MaterialTheme.colorScheme.primary)
             Text("Engine: ${model.engineType.name}")
             Text("Languages: ${model.supportedLanguages.joinToString()}")
             Text("License: ${model.licenseName}")
@@ -76,7 +79,7 @@ fun ModelDetailsScreen(
 
         transferMsg?.let { msg ->
             GlassCard(modifier = Modifier.fillMaxWidth()) {
-                Text(msg, color = TransVibeColors.WarmGold)
+                Text(msg, color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)
                 OutlinedButton(onClick = { viewModel.cancelModelTransfer() }) {
                     Text(if (isArabic) "إلغاء النقل" else "Cancel Transfer")
                 }
@@ -110,7 +113,7 @@ fun ModelDetailsScreen(
                 }
             }
             OutlinedButton(onClick = { confirmDelete = true }, modifier = Modifier.fillMaxWidth()) {
-                Text(if (isArabic) "حذف النموذج" else "Remove Model", color = TransVibeColors.CoralError)
+                Text(if (isArabic) "حذف النموذج" else "Remove Model", color = androidx.compose.material3.MaterialTheme.colorScheme.error)
             }
         }
     }
