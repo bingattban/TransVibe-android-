@@ -14,6 +14,10 @@ class PcmAndComposeRegression(unittest.TestCase):
         self.assertIn("peak=", s)
         self.assertIn('Log.i("TransVibeASR",', s)
 
+    def test_completed_audio_scan_does_not_show_zero_progress_on_failed_asr(self):
+        s = read("app/src/main/java/com/transvibe/app/processing/ProcessingOrchestrator.kt")
+        self.assertIn("if (decodedFrames.get() > 0) totalAudioMs else 0L", s)
+
     def test_prevent_unbounded_nested_scrolling(self):
         s = read("app/src/main/java/com/transvibe/app/presentation/screens/TranslationPacksScreen.kt")
         self.assertIn(".verticalScroll(rememberScrollState())", s)
