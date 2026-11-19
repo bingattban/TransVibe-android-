@@ -1,6 +1,14 @@
 package com.transvibe.app.presentation.screens
 
 import androidx.compose.foundation.clickable
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Subtitles
+import androidx.compose.material.icons.rounded.VideoFile
+import androidx.compose.material.icons.rounded.Tune
+import androidx.compose.material.icons.rounded.CheckCircle
+import com.transvibe.app.presentation.components.ScreenHeroHeader
+import com.transvibe.app.presentation.components.PrimaryActionButton
+import com.transvibe.app.presentation.components.StatusPill
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -53,15 +61,14 @@ fun HomeScreen(
             .padding(horizontal = 16.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text("TransVibe", color = MaterialTheme.colorScheme.primary, style = MaterialTheme.typography.headlineMedium)
-            OutlinedButton(onClick = onSettings) {
-                Text(if (isArabic) "الإعدادات" else "Settings")
+        ScreenHeroHeader(
+            title = if (isArabic) "ترجمة الفيديو محلياً" else "Local video subtitle translation",
+            subtitle = if (isArabic) "خصوصيتك أولاً: تفريغ وترجمة على جهازك" else "Your video stays on your device",
+            icon = Icons.Rounded.Subtitles,
+            trailing = {
+                OutlinedButton(onClick = onSettings) { Text(if (isArabic) "الإعدادات" else "Settings") }
             }
-        }
-
-        Text(if (isArabic) "خصوصيتك أولا: تفريغ وترجمة على جهازك" else "Your video stays on your device",
-            color = MaterialTheme.colorScheme.onSurfaceVariant)
+        )
         if (BuildConfig.DIAGNOSTIC_NATIVE_BUILD_SKIPPED && !WhisperNativeBridge.isAvailable()) {
             GlassCard(modifier = Modifier.fillMaxWidth()) {
                 Text(
@@ -80,13 +87,12 @@ fun HomeScreen(
                 style = androidx.compose.material3.MaterialTheme.typography.titleMedium
             )
             Spacer(Modifier.height(8.dp))
-            Button(
+            PrimaryActionButton(
+                text = if (isArabic) "اختيار فيديو" else "Pick Video",
                 onClick = onNewVideo,
-                modifier = Modifier.fillMaxWidth(),
-                colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
-            ) {
-                Text(if (isArabic) "اختيار فيديو" else "Pick Video", color = MaterialTheme.colorScheme.onPrimary)
-            }
+                icon = Icons.Rounded.VideoFile,
+                modifier = Modifier.fillMaxWidth()
+            )
         }
 
         GlassCard(modifier = Modifier.fillMaxWidth(),
@@ -95,6 +101,14 @@ fun HomeScreen(
                 else "Models installed: $readyCount / 7",
                 color = MaterialTheme.colorScheme.primary,
                 style = MaterialTheme.typography.titleMedium)
+            StatusPill(
+                label = if (readyCount > 0 && WhisperNativeBridge.isAvailable())
+                    (if (isArabic) "جاهز" else "Ready")
+                else (if (isArabic) "يحتاج إعداد" else "Setup needed"),
+                color = if (readyCount > 0 && WhisperNativeBridge.isAvailable())
+                    MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.tertiary,
+                icon = Icons.Rounded.CheckCircle
+            )
             Text(if (isArabic) "المشاريع المحفوظة: ${jobs.size}"
                 else "Saved projects: ${jobs.size}",
                 color = MaterialTheme.colorScheme.onSurfaceVariant)

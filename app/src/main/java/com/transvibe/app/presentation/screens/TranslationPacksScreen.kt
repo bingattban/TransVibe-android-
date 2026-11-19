@@ -1,5 +1,9 @@
 package com.transvibe.app.presentation.screens
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Translate
+import com.transvibe.app.presentation.components.ScreenHeroHeader
+
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -39,13 +43,14 @@ fun TranslationPacksScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(
-                if (isArabic) "حزم الترجمة (ML Kit)" else "Translation Packs",
-                style = androidx.compose.material3.MaterialTheme.typography.headlineMedium
-            )
-            OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
-        }
+        ScreenHeroHeader(
+            title = if (isArabic) "حزم الترجمة" else "Translation Packs",
+            subtitle = if (isArabic) "إدارة حزم الترجمة المحلية" else "Manage on-device translation packs",
+            icon = Icons.Rounded.Translate,
+            trailing = {
+                OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
+            }
+        )
 
         OutlinedButton(
             onClick = { viewModel.retryPendingTranslationPacks() },

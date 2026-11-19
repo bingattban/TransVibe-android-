@@ -11,10 +11,19 @@ class UserReferenceUI(unittest.TestCase):
         for token in ("lightColorScheme(", "darkColorScheme(", "themeMode:", "Brush.linearGradient", "RoundedCornerShape(22.dp)"):
             self.assertIn(token,s)
     def test_branding_and_launcher(self):
-        self.assertTrue((ROOT/"app/src/main/res/drawable/transvibe_welcome_logo.xml").is_file())
-        self.assertTrue((ROOT/"app/src/main/res/drawable/transvibe_launcher_icon.xml").is_file())
-        self.assertIn("@drawable/transvibe_launcher_icon", read("app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml"))
-        self.assertIn("TransVibe", read("app/src/main/java/com/transvibe/app/presentation/screens/WelcomeScreen.kt"))
+        # Authoritative owner-provided legacy assets replace temporary vector
+        # prototypes without duplicating Android resource entry names.
+        self.assertTrue((ROOT/"app/src/main/res/drawable-nodpi/transvibe_welcome_logo.png").is_file())
+        self.assertFalse((ROOT/"app/src/main/res/drawable/transvibe_welcome_logo.xml").exists())
+        self.assertTrue((ROOT/"app/src/main/res/mipmap-hdpi/ic_launcher.png").is_file())
+        self.assertFalse((ROOT/"app/src/main/res/mipmap-hdpi/ic_launcher.webp").exists())
+        icon = read("app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml")
+        self.assertIn("@mipmap/ic_launcher_foreground", icon)
+        self.assertIn("@mipmap/ic_launcher_background", icon)
+        self.assertIn("@mipmap/ic_launcher_monochrome", icon)
+        welcome = read("app/src/main/java/com/transvibe/app/presentation/screens/WelcomeScreen.kt")
+        self.assertIn("R.drawable.transvibe_welcome_logo", welcome)
+        self.assertIn("onContinue", welcome)
     def test_bottombar_retains_processing_routes(self):
         s=read("app/src/main/java/com/transvibe/app/presentation/navigation/TransVibeNavGraph.kt")
         for token in ("TransVibeBottomNavigation","currentBackStackEntryAsState","restoreState = true","saveState = true", "Routes.PROCESSING","Routes.RESULTS"):

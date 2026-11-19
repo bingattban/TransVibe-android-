@@ -1,5 +1,9 @@
 package com.transvibe.app.presentation.screens
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Tune
+import com.transvibe.app.presentation.components.ScreenHeroHeader
+
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -38,13 +42,14 @@ fun ModelLibraryScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(
-                if (isArabic) "مكتبة النماذج (7 معتمدة)" else "Model Library (Exact 7)",
-                style = androidx.compose.material3.MaterialTheme.typography.headlineMedium
-            )
-            OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
-        }
+        ScreenHeroHeader(
+            title = if (isArabic) "مكتبة النماذج" else "Model Library",
+            subtitle = if (isArabic) "إدارة نماذج التعرف المثبتة على الجهاز" else "Manage installed recognition models",
+            icon = Icons.Rounded.Tune,
+            trailing = {
+                OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
+            }
+        )
 
         transferMsg?.let {
             Text(it, color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)

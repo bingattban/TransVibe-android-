@@ -1,6 +1,35 @@
 package com.transvibe.app.presentation.navigation
 
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.animateColorAsState
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.sizeIn
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.material.icons.filled.History as FilledHistory
+import androidx.compose.material.icons.filled.Home as FilledHome
+import androidx.compose.material.icons.filled.Settings as FilledSettings
+import androidx.compose.material.icons.filled.Tune as FilledTune
+import androidx.compose.material.icons.outlined.History as OutlinedHistory
+import androidx.compose.material.icons.outlined.Home as OutlinedHome
+import androidx.compose.material.icons.outlined.Settings as OutlinedSettings
+import androidx.compose.material.icons.outlined.Tune as OutlinedTune
 import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.core.tween
@@ -265,7 +294,7 @@ fun TransVibeNavGraph(
     }
 }
 
-/** Persistent four-section navigation; hidden during processing and subtitle editing. */
+/** Original owner's four-section navigation silhouette and animated tabs. */
 @Composable
 private fun TransVibeBottomNavigation(
     currentRoute: String?,
@@ -274,38 +303,88 @@ private fun TransVibeBottomNavigation(
 ) {
     val scheme = MaterialTheme.colorScheme
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 14.dp, vertical = 8.dp),
+        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
         shape = RoundedCornerShape(26.dp),
         color = scheme.surfaceContainer,
+        tonalElevation = 4.dp,
         shadowElevation = 6.dp,
-        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.65f))
+        border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.55f))
     ) {
-        NavigationBar(
-            containerColor = androidx.compose.ui.graphics.Color.Transparent,
-            tonalElevation = 0.dp
+        Row(
+            modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 6.dp),
+            verticalAlignment = Alignment.CenterVertically
         ) {
-            val destinations = listOf(
-                Triple(Routes.HOME, if (isArabic) "الرئيسية" else "Home", Icons.Filled.Home),
-                Triple(Routes.MODELS, if (isArabic) "النماذج" else "Models", Icons.Filled.Tune),
-                Triple(Routes.HISTORY, if (isArabic) "مشاريعي" else "History", Icons.Filled.History),
-                Triple(Routes.SETTINGS, if (isArabic) "الإعدادات" else "Settings", Icons.Filled.Settings)
-            )
-            destinations.forEach { (route, label, icon) ->
-                NavigationBarItem(
-                    selected = route == currentRoute,
-                    onClick = { onNavigate(route) },
-                    icon = { Icon(icon, contentDescription = label) },
-                    label = { Text(label, maxLines = 1) },
-                    alwaysShowLabel = true,
-                    colors = NavigationBarItemDefaults.colors(
-                        selectedIconColor = scheme.onPrimaryContainer,
-                        selectedTextColor = scheme.primary,
-                        indicatorColor = scheme.primaryContainer,
-                        unselectedIconColor = scheme.onSurfaceVariant,
-                        unselectedTextColor = scheme.onSurfaceVariant
-                    )
-                )
-            }
+            AppNavItem(currentRoute == Routes.HOME, { onNavigate(Routes.HOME) }, Icons.Filled.FilledHome, Icons.Outlined.OutlinedHome, if (isArabic) "الرئيسية" else "Home")
+            AppNavItem(currentRoute == Routes.MODELS, { onNavigate(Routes.MODELS) }, Icons.Filled.FilledTune, Icons.Outlined.OutlinedTune, if (isArabic) "النماذج" else "Models")
+            AppNavItem(currentRoute == Routes.HISTORY, { onNavigate(Routes.HISTORY) }, Icons.Filled.FilledHistory, Icons.Outlined.OutlinedHistory, if (isArabic) "السجل" else "History")
+            AppNavItem(currentRoute == Routes.SETTINGS, { onNavigate(Routes.SETTINGS) }, Icons.Filled.FilledSettings, Icons.Outlined.OutlinedSettings, if (isArabic) "الإعدادات" else "Settings")
         }
     }
 }
+
+@Composable
+private fun RowScope.AppNavItem(
+    selected: Boolean,
+    onClick: () -> Unit,
+    selectedIcon: ImageVector,
+    unselectedIcon: ImageVector,
+    label: String,
+    hasBadge: Boolean = false
+) {
+    val scheme = MaterialTheme.colorScheme
+    val pillColor by animateColorAsState(
+        targetValue = if (selected) scheme.primaryContainer else Color.Transparent,
+        animationSpec = tween(220),
+        label = "navPill"
+    )
+    val iconColor by animateColorAsState(
+        targetValue = if (selected) scheme.primary else scheme.onSurfaceVariant,
+        animationSpec = tween(220),
+        label = "navIcon"
+    )
+
+    Column(
+        modifier = Modifier
+            .weight(1f)
+            .sizeIn(minHeight = 60.dp)
+            .clip(RoundedCornerShape(18.dp))
+            .semantics { this.selected = selected; role = Role.Tab }
+            .clickable(role = Role.Tab, onClick = onClick)
+            .padding(vertical = 4.dp),
+        horizontalAlignment = Alignment.CenterHorizontally,
+        verticalArrangement = Arrangement.spacedBy(3.dp)
+    ) {
+        Box(
+            modifier = Modifier
+                .clip(RoundedCornerShape(14.dp))
+                .background(pillColor)
+                .padding(horizontal = 18.dp, vertical = 4.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            Icon(
+                imageVector = if (selected) selectedIcon else unselectedIcon,
+                contentDescription = label,
+                tint = iconColor,
+                modifier = Modifier.size(22.dp)
+            )
+            if (hasBadge) {
+                Box(
+                    modifier = Modifier
+                        .align(Alignment.TopEnd)
+                        .size(7.dp)
+                        .clip(CircleShape)
+                        .background(scheme.tertiary)
+                )
+            }
+        }
+        Text(
+            text = label,
+            color = if (selected) scheme.primary else scheme.onSurfaceVariant,
+            fontWeight = if (selected) FontWeight.Bold else FontWeight.Medium,
+            style = MaterialTheme.typography.labelSmall,
+            maxLines = 1,
+            overflow = TextOverflow.Ellipsis
+        )
+    }
+}
+

@@ -181,6 +181,19 @@ class CoGoFoundationContract(unittest.TestCase):
                        'app/src/main/res/values/colors.xml',
                        'app/src/main/res/xml/backup_rules.xml','app/src/main/res/xml/data_extraction_rules.xml'}:
                 continue # TransVibe's real UI, backup and strings supersede the empty starter's values.
+            # The user's original TransVibe adaptive PNG icon supersedes
+            # the temporary Code On The Go starter WebP icon only.
+            if '/mipmap-' in rel and rel.endswith('.webp') and '/ic_launcher' in rel:
+                # The old project uses an adaptive ic_launcher_round.xml
+                # referencing original PNG foreground/background, not a
+                # non-existent legacy ic_launcher_round.png.
+                replacement = ('app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml'
+                               if '/ic_launcher_round.webp' in rel
+                               else rel.replace('.webp', '.png'))
+                self.assertTrue((ROOT/replacement).exists(),
+                                f'Original replacement icon absent: {replacement}')
+                self.assertFalse((ROOT/rel).exists(), f'Obsolete starter icon remains: {rel}')
+                continue
             actual=ROOT/rel
             self.assertTrue(actual.exists(),rel)
             self.assertEqual(hashlib.sha256(actual.read_bytes()).hexdigest(),item['sha256'],rel)
@@ -201,7 +214,7 @@ class CoGoFoundationContract(unittest.TestCase):
             self.assertFalse((ROOT/path).exists(),f'Secret/cache leaked: {path}')
 
     def test_cogo_icons_and_full_app_both_present(self):
-        self.assertTrue((ROOT/'app/src/main/res/mipmap-hdpi/ic_launcher.webp').exists())
+        self.assertTrue((ROOT/'app/src/main/res/mipmap-hdpi/ic_launcher.png').exists())
         self.assertIn('ComponentActivity',(CODE_ROOT/'MainActivity.kt').read_text())
         self.assertTrue((CODE_ROOT/'presentation/navigation/TransVibeNavGraph.kt').exists())
         self.assertTrue((CODE_ROOT/'models/ModelCatalog.kt').exists())

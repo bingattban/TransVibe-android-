@@ -1,5 +1,9 @@
 package com.transvibe.app.presentation.screens
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Subtitles
+import com.transvibe.app.presentation.components.ScreenHeroHeader
+
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.layout.Arrangement
@@ -56,10 +60,14 @@ fun ResultsEditorScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(if (isArabic) "النتائج ومحرر الترجمة" else "Results & Subtitle Editor", style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
-            OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
-        }
+        ScreenHeroHeader(
+            title = if (isArabic) "النتائج ومحرر الترجمة" else "Results & Subtitle Editor",
+            subtitle = if (isArabic) "مراجعة المقاطع وتعديلها وتصديرها" else "Review, edit and export subtitles",
+            icon = Icons.Rounded.Subtitles,
+            trailing = {
+                OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
+            }
+        )
 
         jobMeta?.let { meta ->
             GlassCard(modifier = Modifier.fillMaxWidth()) {
