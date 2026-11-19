@@ -1,8 +1,16 @@
 pluginManagement {
   repositories {
-    gradlePluginPortal()
-    google()
+    // Resolve recent KSP versions directly from Maven Central first.
     mavenCentral()
+    google()
+    gradlePluginPortal()
+  }
+  resolutionStrategy {
+    eachPlugin {
+      if (requested.id.id == "com.google.devtools.ksp") {
+        useModule("com.google.devtools.ksp:symbol-processing-gradle-plugin:${requested.version}")
+      }
+    }
   }
 }
 
