@@ -117,8 +117,12 @@ Java_com_transvibe_app_nativebridge_WhisperNativeBridge_nativeTranscribe(
     params.single_segment = false;
     if (!greedyOnly && beamSize > 1) params.beam_search.beam_size = beamSize;
     if (lang == "auto" || lang.empty()) {
+        // In pinned whisper.cpp, detect_language=true is *detection only*:
+        // whisper_full() returns 0 immediately after selecting the language,
+        // leaving zero text segments. "auto" itself already triggers detection
+        // AND continues normal speech transcription when this flag is false.
         params.language = "auto";
-        params.detect_language = true;
+        params.detect_language = false;
     } else {
         params.language = lang.c_str();
     }
@@ -138,6 +142,9 @@ Java_com_transvibe_app_nativebridge_WhisperNativeBridge_nativeTranscribe(
     jobjectArray result = env->NewObjectArray(nSegments, segClass, nullptr);
     int langId = whisper_full_lang_id(holder->ctx);
     const char* detectedLang = whisper_lang_str(langId);
+    // Log only language and segment count; never private transcript text.
+    LOGI("whisper_full completed rc=%d segments=%d language=%s",
+         rc, nSegments, detectedLang ? detectedLang : "unknown");
     jstring jLang = env->NewStringUTF(detectedLang ? detectedLang : "unknown");
     for (int i = 0; i < nSegments; ++i) {
         int64_t t0Ms = whisper_full_get_segment_t0(holder->ctx, i) * 10LL;
