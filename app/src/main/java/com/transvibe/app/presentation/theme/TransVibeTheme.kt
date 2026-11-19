@@ -421,11 +421,12 @@ fun GlassCard(
     borderColor: Color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.70f),
     content: @Composable ColumnScope.() -> Unit
 ) {
-    Card(
-        modifier = modifier,
-        shape = RoundedCornerShape(22.dp),
-        colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow),
-        border = BorderStroke(1.dp, borderColor)
+    val scheme = MaterialTheme.colorScheme
+    val highlighted = borderColor != scheme.outlineVariant.copy(alpha = 0.70f)
+    // Use the *actual* old project glass panel layout; current screen
+    // lambdas continue receiving their original ColumnScope for compatibility.
+    com.transvibe.app.presentation.components.GlassCard(
+        modifier = modifier, highlighted = highlighted
     ) {
         androidx.compose.foundation.layout.Column(
             modifier = Modifier.padding(16.dp),
