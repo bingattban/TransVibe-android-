@@ -5,6 +5,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -45,6 +47,7 @@ fun ProcessingSetupScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -64,7 +67,7 @@ fun ProcessingSetupScreen(
             }
             if (records[selectedModel.modelId]?.status != ModelStatus.READY) {
                 OutlinedButton(onClick = onOpenModels) {
-                    Text(if (isArabic) "تثبيت النموذج من المكتبة" else "Install Model in Library", color = TransVibeColors.WarmGold)
+                    Text(if (isArabic) "تثبيت النموذج من المكتبة" else "Install Model in Library", color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)
                 }
             }
         }
@@ -76,7 +79,7 @@ fun ProcessingSetupScreen(
         }
 
         OutlinedButton(onClick = onOpenTranslationPacks, modifier = Modifier.fillMaxWidth()) {
-            Text(if (isArabic) "إدارة حزم الترجمة (ML Kit)" else "Manage Translation Packs", color = TransVibeColors.ElectricCyan)
+            Text(if (isArabic) "إدارة حزم الترجمة (ML Kit)" else "Manage Translation Packs", color = androidx.compose.material3.MaterialTheme.colorScheme.primary)
         }
 
         Button(
