@@ -45,12 +45,17 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: android-actions/setup-android@v3
       - uses: gradle/actions/setup-gradle@v4
-      - name: Install Android SDK platform and NDK
+      - name: Use hosted Android SDK, no obsolete tools package
         run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager 'platforms;android-36' 'ndk;28.2.13676358'
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          test -d "$SDK_ROOT/cmdline-tools"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          SDKM="$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager -print -quit)"
+          test -n "$SDKM"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" 'platforms;android-36' 'ndk;28.2.13676358'
       - name: Run Gradle unit tests before any APK packaging
         run: |
           chmod +x gradlew
@@ -66,12 +71,17 @@ jobs:
         with:
           distribution: temurin
           java-version: '21'
-      - uses: android-actions/setup-android@v3
       - uses: gradle/actions/setup-gradle@v4
-      - name: Install Android SDK platform and NDK
+      - name: Use hosted Android SDK, no obsolete tools package
         run: |
-          yes | sdkmanager --licenses > /dev/null || true
-          sdkmanager 'platforms;android-36' 'ndk;28.2.13676358'
+          set -euo pipefail
+          SDK_ROOT="${ANDROID_HOME:-${ANDROID_SDK_ROOT:-/usr/local/lib/android/sdk}}"
+          test -d "$SDK_ROOT/cmdline-tools"
+          echo "ANDROID_HOME=$SDK_ROOT" >> "$GITHUB_ENV"
+          SDKM="$(find "$SDK_ROOT/cmdline-tools" -type f -name sdkmanager -print -quit)"
+          test -n "$SDKM"
+          yes | "$SDKM" --licenses > /dev/null || true
+          "$SDKM" 'platforms;android-36' 'ndk;28.2.13676358'
       - name: Build two non-release Android variants
         run: |
           chmod +x gradlew
