@@ -87,6 +87,7 @@ class CoGoFoundationContract(unittest.TestCase):
             if rel in {
                 'app/src/main/java/com/transvibe/app/translation/TranslationPipeline.kt',
                 'app/src/main/java/com/transvibe/app/translation/MlKitTranslationEngine.kt',
+                'app/src/main/java/com/transvibe/app/media/AudioResampler.kt',
                 'app/src/main/java/com/transvibe/app/processing/ProcessingOrchestrator.kt',
                 'app/src/main/java/com/transvibe/app/presentation/screens/ProcessingScreen.kt',
                 'app/src/main/java/com/transvibe/app/platform/TransVibeProcessingService.kt',
