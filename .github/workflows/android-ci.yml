@@ -136,12 +136,12 @@ jobs:
           test "$(find app/build/outputs/apk/preview app/build/outputs/apk/release -name '*.apk' | wc -l)" -eq 2
           tools="$(find "$ANDROID_HOME/build-tools" -mindepth 1 -maxdepth 1 -type d | sort -V | tail -1)"
           signer="$tools/apksigner"
-          analyzer="$tools/apkanalyzer"
-          test -x "$signer" && test -x "$analyzer"
+          aapt="$tools/aapt"
+          test -x "$signer" && test -x "$aapt"
           "$signer" verify --verbose "$preview" > /dev/null
           "$signer" verify --verbose "$release" > /dev/null
-          test "$("$analyzer" manifest application-id "$preview")" = "com.transvibe.app.preview"
-          test "$("$analyzer" manifest application-id "$release")" = "com.transvibe.app"
+          "$aapt" dump badging "$preview" | grep -Fq "package: name='com.transvibe.app.preview'"
+          "$aapt" dump badging "$release" | grep -Fq "package: name='com.transvibe.app'"
           cert_preview="$("$signer" verify --print-certs "$preview" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1)"
           cert_release="$("$signer" verify --print-certs "$release" | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | head -1)"
           test -n "$cert_preview" && test "$cert_preview" = "$cert_release"
