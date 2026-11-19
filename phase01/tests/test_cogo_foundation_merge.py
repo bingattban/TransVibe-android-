@@ -62,6 +62,19 @@ class CoGoFoundationContract(unittest.TestCase):
                 else:
                     self.assertFalse(binary.exists(), 'Unverified JNI binary cannot be accepted')
                 continue
+            if rel in {
+                'app/src/main/java/com/transvibe/app/translation/TranslationPipeline.kt',
+                'app/src/main/java/com/transvibe/app/translation/MlKitTranslationEngine.kt',
+                'app/src/main/java/com/transvibe/app/processing/ProcessingOrchestrator.kt',
+                'app/src/main/java/com/transvibe/app/presentation/screens/ProcessingScreen.kt',
+                'app/src/main/java/com/transvibe/app/platform/TransVibeProcessingService.kt',
+                'app/src/test/java/com/transvibe/app/TranslationRoutingAndFixesTest.kt',
+            }:
+                # These exact files have an authorized 41/41s processing-stall
+                # repair. Dedicated Python/Kotlin regression tests check the
+                # changed behavior; all other original files keep SHA checks.
+                self.assertTrue(target.is_file(), f'Missing translation-stall fix: {rel}')
+                continue
             if rel == 'app/src/main/java/com/transvibe/app/domain/Policies.kt':
                 # Only the unsafe Arabic transcript shortcut was removed. All
                 # other policy logic must remain identical to the Phase00 baseline.

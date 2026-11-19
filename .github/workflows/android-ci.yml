@@ -123,8 +123,14 @@ jobs:
           } > release.properties
       - name: Build exactly two signed APK variants
         run: |
+          set -euo pipefail
           chmod +x gradlew
-          ./gradlew --no-daemon :app:assemblePreview :app:assembleRelease
+          # KSP/Room generates JSON metadata. Running both variants in one Gradle
+          # invocation can interleave generated JSON and leave an empty file.
+          # Keep the test-first gate, then build variants one by one without
+          # reusing a potentially damaged Gradle task-output cache.
+          ./gradlew --no-daemon --no-build-cache --stacktrace :app:assemblePreview
+          ./gradlew --no-daemon --no-build-cache --stacktrace :app:assembleRelease
       - name: Verify signatures, app identities and same certificate
         env:
           EXPECTED_CERT_SHA256: ${{ vars.TRANSVIBE_SIGNING_CERT_SHA256 }}

@@ -257,10 +257,23 @@ class ProcessingOrchestrator(
                     totalAudioMs, totalAudioMs, System.currentTimeMillis() - startedMs,
                     asrEngine.engineId, model.modelId
                 )
-                val trRes = retranslateCachedTranscript(jobId, sourceLang, targetLang)
+                val trRes = retranslateCachedTranscript(jobId, sourceLang, targetLang) { completed, total ->
+                    _progress.value = ProcessingProgress(
+                        jobId, JobState.TRANSLATING, "Translation $completed/$total",
+                        totalAudioMs, totalAudioMs, System.currentTimeMillis() - startedMs,
+                        asrEngine.engineId, model.modelId
+                    )
+                }
                 if (trRes.isFailure) {
+                    val error = trRes.exceptionOrNull() ?: IllegalStateException("Translation stage failed")
                     jobDao.updateProgress(jobId, JobState.FAILED.name, inspection.durationUs, System.currentTimeMillis())
-                    return Result.failure(trRes.exceptionOrNull() ?: IllegalStateException("Translation stage failed"))
+                    _progress.value = ProcessingProgress(
+                        jobId, JobState.FAILED, "Translation failed",
+                        totalAudioMs, totalAudioMs, System.currentTimeMillis() - startedMs,
+                        asrEngine.engineId, model.modelId,
+                        warningMessage = error.message ?: "Translation failed"
+                    )
+                    return Result.failure(error)
                 }
             }
 
@@ -276,10 +289,22 @@ class ProcessingOrchestrator(
             asrEngine.cancelActive()
             val cur = jobDao.getJob(jobId)
             jobDao.updateProgress(jobId, JobState.INTERRUPTED_RECOVERABLE.name, cur?.lastCheckpointUs ?: 0L, System.currentTimeMillis())
+            _progress.value = ProcessingProgress(
+                jobId, JobState.INTERRUPTED_RECOVERABLE, "Interrupted",
+                (cur?.lastCheckpointUs ?: 0L) / 1000L, (cur?.durationUs ?: 0L) / 1000L,
+                System.currentTimeMillis() - startedMs, asrEngine.engineId, model.modelId,
+                warningMessage = "Processing cancelled. Recognized text is kept for recovery."
+            )
             throw ce
         } catch (t: Throwable) {
             val cur = jobDao.getJob(jobId)
             jobDao.updateProgress(jobId, JobState.FAILED.name, cur?.lastCheckpointUs ?: 0L, System.currentTimeMillis())
+            _progress.value = ProcessingProgress(
+                jobId, JobState.FAILED, "Processing failed",
+                (cur?.lastCheckpointUs ?: 0L) / 1000L, (cur?.durationUs ?: 0L) / 1000L,
+                System.currentTimeMillis() - startedMs, asrEngine.engineId, model.modelId,
+                warningMessage = t.message ?: "Unexpected processing failure"
+            )
             return Result.failure(t)
         } finally {
             asrEngine.close()
@@ -326,7 +351,8 @@ class ProcessingOrchestrator(
     suspend fun retranslateCachedTranscript(
         jobId: String,
         sourceLangHint: String,
-        targetLang: String = "ar"
+        targetLang: String = "ar",
+        onSegmentDone: ((Int, Int) -> Unit)? = null
     ): Result<Int> {
         val entities = transcriptDao.getSegmentsForJob(jobId)
         if (entities.isEmpty()) {
@@ -338,11 +364,21 @@ class ProcessingOrchestrator(
         val leasedPacks = mutableSetOf<String>()
 
         try {
+            val translatableCount = entities.count { it.originalText.isNotBlank() }
+            var translatedCount = 0
+            onSegmentDone?.invoke(0, translatableCount)
             for (ent in entities) {
                 if (ent.originalText.isBlank()) continue
                 val resolvedSrc = ent.detectedLanguage?.takeIf { it != "unknown" && it != "auto" }
                     ?: sourceLangHint.takeIf { it != "auto" && it != "unknown" }
 
+                // Hold leases BEFORE translation: user cannot remove a pack
+                // while its ML Kit task is running on another dispatcher.
+                val requiredPacks = com.transvibe.app.translation.TranslationRoutingPolicy
+                    .planRoute(resolvedSrc, targetLang).requiredPacks
+                for (pack in requiredPacks) {
+                    if (leasedPacks.add(pack)) translationPackManager.acquirePackLease(pack)
+                }
                 val existing = existingMap[ent.segmentId]
                 val outcome = pipeline.translateSegment(
                     segmentId = ent.segmentId,
@@ -352,9 +388,6 @@ class ProcessingOrchestrator(
                     existingEnglishIntermediate = existing?.englishIntermediateText
                 )
 
-                if (resolvedSrc != null && leasedPacks.add(resolvedSrc)) {
-                    translationPackManager.acquirePackLease(resolvedSrc)
-                }
 
                 translations.add(
                     TranslationEntity(
@@ -374,6 +407,8 @@ class ProcessingOrchestrator(
                     if (translations.isNotEmpty()) transcriptDao.upsertTranslations(translations)
                     return Result.failure(IllegalStateException(outcome.errorMessage ?: "Translation failed"))
                 }
+                translatedCount++
+                onSegmentDone?.invoke(translatedCount, translatableCount)
             }
             if (translations.isNotEmpty()) transcriptDao.upsertTranslations(translations)
             return Result.success(translations.size)

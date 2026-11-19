@@ -1,6 +1,8 @@
 package com.transvibe.app.translation
 
 import com.transvibe.app.domain.TranslationEngine
+import com.transvibe.app.domain.TranslationResult
+import kotlinx.coroutines.withTimeoutOrNull
 
 data class StagedTranslationOutcome(
     val segmentId: String,
@@ -21,6 +23,41 @@ data class StagedTranslationOutcome(
  * Preserves Stage 1 English intermediate text if Stage 2 fails so retries do not repeat Stage 1 or ASR.
  */
 class TranslationPipeline(private val engine: TranslationEngine) {
+    // Never download language packs silently while video processing is active.
+    // Cache readiness for one sequential translation pipeline/job.
+    private val readyPairs = mutableSetOf<Pair<String, String>>()
+
+    private suspend fun boundedTranslate(
+        segmentId: String, text: String, source: String, target: String
+    ): Result<TranslationResult> {
+        val pair = source to target
+        if (pair !in readyPairs) {
+            val ready = try {
+                withTimeoutOrNull(10_000L) { engine.isPackInstalled(source, target) }
+            } catch (ce: kotlinx.coroutines.CancellationException) {
+                throw ce
+            } catch (t: Throwable) {
+                return Result.failure(IllegalStateException("TRANSLATION_PACK_CHECK_FAILED: ${t.message}", t))
+            }
+            if (ready == null) {
+                return Result.failure(IllegalStateException("TRANSLATION_PACK_CHECK_TIMEOUT: $source->$target"))
+            }
+            if (!ready) {
+                return Result.failure(IllegalStateException(
+                    "TRANSLATION_PACK_MISSING: $source->$target. Download the offline pack in Translation Packs first."
+                ))
+            }
+            readyPairs.add(pair)
+        }
+        return try {
+            withTimeoutOrNull(60_000L) { engine.translate(segmentId, text, source, target) }
+                ?: Result.failure(IllegalStateException("TRANSLATION_TIMEOUT: $source->$target after 60 seconds"))
+        } catch (ce: kotlinx.coroutines.CancellationException) {
+            throw ce
+        } catch (t: Throwable) {
+            Result.failure(IllegalStateException("TRANSLATION_ENGINE_FAILURE: $source->$target: ${t.message}", t))
+        }
+    }
 
     suspend fun translateSegment(
         segmentId: String,
@@ -51,7 +88,7 @@ class TranslationPipeline(private val engine: TranslationEngine) {
             )
 
             TranslationRouteKind.DIRECT_EN_TO_AR -> {
-                val res = engine.translate(segmentId, originalText, "en", "ar")
+                val res = boundedTranslate(segmentId, originalText, "en", "ar")
                 res.fold(
                     onSuccess = { tr ->
                         StagedTranslationOutcome(
@@ -81,7 +118,7 @@ class TranslationPipeline(private val engine: TranslationEngine) {
                 val englishText = if (!existingEnglishIntermediate.isNullOrBlank()) {
                     existingEnglishIntermediate
                 } else {
-                    val stage1 = engine.translate("${segmentId}_s1", originalText, plan.sourceLang, "en")
+                    val stage1 = boundedTranslate("${segmentId}_s1", originalText, plan.sourceLang, "en")
                     stage1.getOrElse { err ->
                         return StagedTranslationOutcome(
                             segmentId = segmentId,
@@ -95,7 +132,7 @@ class TranslationPipeline(private val engine: TranslationEngine) {
                     }.translatedText
                 }
 
-                val stage2 = engine.translate("${segmentId}_s2", englishText, "en", "ar")
+                val stage2 = boundedTranslate("${segmentId}_s2", englishText, "en", "ar")
                 stage2.fold(
                     onSuccess = { tr ->
                         StagedTranslationOutcome(

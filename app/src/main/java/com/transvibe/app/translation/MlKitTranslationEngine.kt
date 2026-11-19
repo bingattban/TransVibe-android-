@@ -9,6 +9,7 @@ import com.google.mlkit.nl.translate.Translator
 import com.google.mlkit.nl.translate.TranslatorOptions
 import com.transvibe.app.domain.TranslationEngine
 import com.transvibe.app.domain.TranslationResult
+import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.sync.Mutex
 import kotlinx.coroutines.sync.withLock
@@ -50,6 +51,8 @@ class MlKitTranslationEngine : TranslationEngine {
                 translator.downloadModelIfNeeded(DownloadConditions.Builder().build()).await()
                 translator.close()
                 Result.success(Unit)
+            } catch (ce: CancellationException) {
+                throw ce
             } catch (t: Throwable) {
                 Result.failure(t)
             }
@@ -99,6 +102,8 @@ class MlKitTranslationEngine : TranslationEngine {
                         durationMs = System.currentTimeMillis() - startMs
                     )
                 )
+            } catch (ce: CancellationException) {
+                throw ce
             } catch (t: Throwable) {
                 Result.failure(t)
             }
