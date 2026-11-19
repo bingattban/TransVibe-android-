@@ -1,5 +1,9 @@
 package com.transvibe.app.presentation.screens
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.PlayArrow
+import com.transvibe.app.presentation.components.ScreenHeroHeader
+
 import android.net.Uri
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -84,10 +88,14 @@ fun PlayerPreviewScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(10.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(if (isArabic) "معاينة الفيديو والترجمة" else "Video Preview", style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
-            OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
-        }
+        ScreenHeroHeader(
+            title = if (isArabic) "معاينة الفيديو والترجمة" else "Video Preview",
+            subtitle = if (isArabic) "عرض الفيديو مع الترجمة النصية" else "Video with timed subtitles",
+            icon = Icons.Rounded.PlayArrow,
+            trailing = {
+                OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
+            }
+        )
 
         Box(modifier = Modifier.fillMaxWidth().height(230.dp)) {
             AndroidView(
