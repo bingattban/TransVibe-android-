@@ -11,10 +11,10 @@ class UserReferenceUI(unittest.TestCase):
         for token in ("lightColorScheme(", "darkColorScheme(", "themeMode:", "Brush.linearGradient", "RoundedCornerShape(22.dp)"):
             self.assertIn(token,s)
     def test_branding_and_launcher(self):
-        s=read("app/build.gradle.kts")
-        for token in ("branding/transvibe-welcome.png.b64", "branding/transvibe-icon.png.b64", "SHA-256"):
-            self.assertIn(token,s)
+        self.assertTrue((ROOT/"app/src/main/res/drawable/transvibe_welcome_logo.xml").is_file())
+        self.assertTrue((ROOT/"app/src/main/res/drawable/transvibe_launcher_icon.xml").is_file())
         self.assertIn("@drawable/transvibe_launcher_icon", read("app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml"))
+        self.assertIn("TransVibe", read("app/src/main/java/com/transvibe/app/presentation/screens/WelcomeScreen.kt"))
     def test_bottombar_retains_processing_routes(self):
         s=read("app/src/main/java/com/transvibe/app/presentation/navigation/TransVibeNavGraph.kt")
         for token in ("TransVibeBottomNavigation","currentBackStackEntryAsState","restoreState = true","saveState = true", "Routes.PROCESSING","Routes.RESULTS"):
