@@ -17,7 +17,7 @@ class ReleaseNativeGateKotlinDslRegression(unittest.TestCase):
 
     def test_zipfile_import_is_explicit_not_java_extension(self):
         self.assertRegex(self.source, r"(?m)^import\s+java\.util\.zip\.ZipFile\s*$")
-        self.assertRegex(self.source, r"\bZipFile\(sherpaArchives\.single\(\)\)\.use\s*\{")
+        self.assertRegex(self.source, r"\bZipFile\(archive\)\.use\s*\{")
         self.assertNotIn("java.util.zip.ZipFile(sherpaArchives.single())", self.source)
 
     def test_release_guard_registers_without_deprecated_delegate(self):
@@ -26,9 +26,9 @@ class ReleaseNativeGateKotlinDslRegression(unittest.TestCase):
 
     def test_release_gate_stays_closed_but_diagnostic_preview_allowed(self):
         for token in (
-            "include/whisper.h", "sherpa-onnx-*.aar", "jni/arm64-v8a/libonnxruntime.so",
-            "preReleaseBuild", "externalNativeBuildRelease", "assembleRelease", "bundleRelease",
-            "dependsOn(verifyReleaseNativeDependencies)",
+            'check(hasPrebuiltWhisperJni)', 'check(hasValidSigningProps)',
+            'libs/native-provenance.json', 'preReleaseBuild', 'assembleRelease',
+            'bundleRelease', 'dependsOn(verifyReleaseNativeDependencies)',
         ):
             self.assertIn(token, self.source)
         self.assertIn('applicationIdSuffix = ".preview"', self.source)
