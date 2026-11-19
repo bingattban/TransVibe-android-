@@ -36,6 +36,13 @@ class TranslationStallRegression(unittest.TestCase):
         self.assertLess(s.index("val trRes = retranslateCachedTranscript"),
                         s.index("jobDao.updateProgress(jobId, JobState.COMPLETED.name"))
 
+    def test_release_and_preview_ksp_tasks_are_not_interleaved(self):
+        workflow = read(".github/workflows/android-ci.yml")
+        self.assertNotIn("./gradlew --no-daemon :app:assemblePreview :app:assembleRelease", workflow)
+        self.assertIn(":app:assemblePreview", workflow)
+        self.assertIn(":app:assembleRelease", workflow)
+        self.assertIn("--no-build-cache", workflow)
+
     def test_failed_job_logged_without_transcript(self):
         s = read("app/src/main/java/com/transvibe/app/platform/TransVibeProcessingService.kt")
         self.assertIn('Log.e(', s)
