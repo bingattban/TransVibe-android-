@@ -1,5 +1,9 @@
 package com.transvibe.app.presentation.screens
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Tune
+import com.transvibe.app.presentation.components.ScreenHeroHeader
+
 import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -51,10 +55,14 @@ fun ProcessingSetupScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(if (isArabic) "إعداد التفريغ والترجمة" else "Processing Setup", style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
-            OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
-        }
+        ScreenHeroHeader(
+            title = if (isArabic) "إعداد التفريغ والترجمة" else "Processing Setup",
+            subtitle = if (isArabic) "تحديد النموذج واللغة قبل المعالجة" else "Select model and language",
+            icon = Icons.Rounded.Tune,
+            trailing = {
+                OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
+            }
+        )
 
         GlassCard(modifier = Modifier.fillMaxWidth()) {
             Text(if (isArabic) "اختر النموذج:" else "Select Model:")
