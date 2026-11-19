@@ -1,6 +1,7 @@
 package com.transvibe.app.processing
 
 import android.net.Uri
+import android.util.Log
 import com.transvibe.app.asr.AsrRouter
 import com.transvibe.app.asr.ModelProfiles
 import com.transvibe.app.diagnostics.JobTelemetry
@@ -158,6 +159,11 @@ class ProcessingOrchestrator(
             val totalAudioMs = inspection.durationUs / 1000L
             val channel = Channel<AudioSegment>(capacity = MemoryBudgetPolicy.DEFAULT_CHANNEL_CAPACITY)
             val queuedBytes = AtomicInteger(0)
+            val decodedFrames = AtomicInteger(0)
+            val candidateSegments = AtomicInteger(0)
+            val asrCalls = AtomicInteger(0)
+            val recognizedSegments = AtomicInteger(0)
+            val vadFallbackWindows = AtomicInteger(0)
 
             coroutineScope {
                 val producer = launch(Dispatchers.IO) {
@@ -168,6 +174,7 @@ class ProcessingOrchestrator(
                     var chunkIdx = (resumeFromUs / 1_000_000L).toInt()
 
                     decoder.streamDecodedPcm(mediaUri, trackIndex, resumeFromUs).collect { frame ->
+                        if (frame.pcm16.isNotEmpty()) decodedFrames.incrementAndGet()
                         val resampled = resampler.resampleToMono16kFloat(
                             frame.pcm16,
                             frame.sampleRateHz,
@@ -190,6 +197,8 @@ class ProcessingOrchestrator(
                                     profile = profile,
                                     channel = channel,
                                     queuedBytes = queuedBytes,
+                                    candidateSegments = candidateSegments,
+                                    vadFallbackWindows = vadFallbackWindows,
                                     nextIndex = { chunkIdx++ }
                                 )
                                 windowCount = 0
@@ -204,6 +213,8 @@ class ProcessingOrchestrator(
                             profile = profile,
                             channel = channel,
                             queuedBytes = queuedBytes,
+                            candidateSegments = candidateSegments,
+                            vadFallbackWindows = vadFallbackWindows,
                             nextIndex = { chunkIdx++ }
                         )
                     }
@@ -223,8 +234,13 @@ class ProcessingOrchestrator(
                                 actualEngineId = asrEngine.engineId,
                                 actualModelId = model.modelId
                             )
+                            asrCalls.incrementAndGet()
                             val res = asrEngine.transcribe(seg, sourceLang).getOrThrow()
-                            val entities = res.segments.mapIndexed { order, ts ->
+                            val recognized = res.segments.filter { it.text.isNotBlank() }
+                            recognizedSegments.addAndGet(recognized.size)
+                            // Only counts and timings in Android logs: never private transcript text.
+                            Log.i("TransVibeASR", "candidate=${seg.index} audioMs=${seg.durationUs / 1000L} results=${recognized.size} inferenceMs=${res.inferenceDurationMs}")
+                            val entities = recognized.mapIndexed { order, ts ->
                                 TranscriptSegmentEntity(
                                     segmentId = "${jobId}_${seg.index}_$order",
                                     jobId = jobId,
@@ -238,7 +254,7 @@ class ProcessingOrchestrator(
                                     modelId = ts.modelId
                                 )
                             }
-                            transcriptDao.upsertSegments(entities)
+                            if (entities.isNotEmpty()) transcriptDao.upsertSegments(entities)
                             jobDao.updateProgress(jobId, JobState.RECOGNIZING.name, seg.endUs, System.currentTimeMillis())
                         } finally {
                             seg.close()
@@ -248,6 +264,28 @@ class ProcessingOrchestrator(
 
                 producer.join()
                 consumer.join()
+            }
+
+            // Do not enter TRANSLATING or mark COMPLETED without an actual
+            // transcript. 41/41s measures processed audio, NOT recognized words.
+            val savedTextSegments = transcriptDao.getSegmentsForJob(jobId).count { it.originalText.isNotBlank() }
+            val absenceCode = EmptyTranscriptRecovery.classify(
+                decodedFrames.get(), candidateSegments.get(), asrCalls.get(), savedTextSegments
+            )
+            Log.i("TransVibeASR", "job=${jobId.take(8)} decodedFrames=${decodedFrames.get()} candidates=${candidateSegments.get()} fallbackWindows=${vadFallbackWindows.get()} asrCalls=${asrCalls.get()} recognized=${recognizedSegments.get()} saved=$savedTextSegments result=$absenceCode")
+            if (absenceCode != "TRANSCRIPT_AVAILABLE") {
+                val message = when (absenceCode) {
+                    "AUDIO_NO_PCM" -> "AUDIO_NO_PCM: Audio decoder returned no PCM frames"
+                    "VAD_NO_SPEECH" -> "VAD_NO_SPEECH: No speech was detected; check video audio and volume"
+                    else -> "ASR_NO_TRANSCRIPT: Whisper did not produce readable words; check model and audio"
+                }
+                jobDao.updateProgress(jobId, JobState.FAILED.name, resumeFromUs, System.currentTimeMillis())
+                _progress.value = ProcessingProgress(
+                    jobId, JobState.FAILED, "Audio transcription failed",
+                    0L, totalAudioMs, System.currentTimeMillis() - startedMs,
+                    asrEngine.engineId, model.modelId, warningMessage = message
+                )
+                return Result.failure(IllegalStateException(message))
             }
 
             // E05: Enforce translation success before marking COMPLETED
@@ -318,11 +356,21 @@ class ProcessingOrchestrator(
         profile: com.transvibe.app.domain.ModelProfile,
         channel: Channel<AudioSegment>,
         queuedBytes: AtomicInteger,
+        candidateSegments: AtomicInteger,
+        vadFallbackWindows: AtomicInteger,
         nextIndex: () -> Int
     ) {
         val regions = vadEngine.detectSpeechRegions(pcm, baseStartUs, profile)
-        if (regions.isEmpty()) return
-        for (region in regions) {
+        val usableRegions = if (regions.isEmpty() && EmptyTranscriptRecovery.isAudibleSpeechCandidate(pcm)) {
+            // One bounded attempt per max-20s window, never for digital silence.
+            vadFallbackWindows.incrementAndGet()
+            Log.w("TransVibeASR", "VAD rejected audible PCM; bounded Whisper fallback window")
+            listOf(com.transvibe.app.domain.SpeechRegion(
+                baseStartUs, baseStartUs + Timebase.samplesToMicros(pcm.size.toLong()), 0.0f
+            ))
+        } else regions
+        if (usableRegions.isEmpty()) return
+        for (region in usableRegions) {
             val startSample = Timebase.microsToSamples(region.startUs - baseStartUs).toInt().coerceIn(0, pcm.size)
             val endSample = Timebase.microsToSamples(region.endUs - baseStartUs).toInt().coerceIn(startSample, pcm.size)
             if (endSample - startSample < 1600) continue
@@ -340,7 +388,13 @@ class ProcessingOrchestrator(
                 onRelease = { queuedBytes.addAndGet(-byteSize) }
             )
             queuedBytes.addAndGet(byteSize)
-            channel.send(seg)
+            try {
+                channel.send(seg)
+                candidateSegments.incrementAndGet()
+            } catch (t: Throwable) {
+                seg.close() // Never leak PCM budget on failed channel delivery.
+                throw t
+            }
         }
     }
 
