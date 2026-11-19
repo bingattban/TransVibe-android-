@@ -8,8 +8,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.items
 import androidx.compose.material3.Button
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Text
@@ -56,8 +54,10 @@ fun TranslationPacksScreen(
             Text(if (isArabic) "إعادة محاولة التنزيلات المعلقة" else "Retry Pending Downloads")
         }
 
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(packs, key = { it.code }) { pack ->
+        // The parent already scrolls. Nesting an unbounded LazyColumn inside
+        // verticalScroll causes a Compose infinite-height crash on the phone.
+        Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+            packs.forEach { pack ->
                 val stateColor = when (pack.state) {
                     PackTransferState.INSTALLED -> TransVibeColors.EmeraldSuccess
                     PackTransferState.FAILED -> androidx.compose.material3.MaterialTheme.colorScheme.error

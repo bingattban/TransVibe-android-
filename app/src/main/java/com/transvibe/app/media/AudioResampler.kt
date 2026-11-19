@@ -36,13 +36,38 @@ class AudioResampler : Resampler {
             }
         } else {
             val invChannels = 1.0f / inputChannels.toFloat()
+            var leftEnergy = 0.0
+            var rightEnergy = 0.0
+            var monoEnergy = 0.0
             for (i in 0 until frameCount) {
                 var sum = 0.0f
                 val base = i * inputChannels
                 for (c in 0 until inputChannels) {
                     sum += pcm16[base + c] * scale
                 }
-                mono[i] = (sum * invChannels).coerceIn(-1.0f, 1.0f)
+                val mixed = (sum * invChannels).coerceIn(-1.0f, 1.0f)
+                mono[i] = mixed
+                if (inputChannels == 2) {
+                    val left = pcm16[base] * scale
+                    val right = pcm16[base + 1] * scale
+                    leftEnergy += left.toDouble() * left
+                    rightEnergy += right.toDouble() * right
+                    monoEnergy += mixed.toDouble() * mixed
+                }
+            }
+            // If stereo channels are close to opposite-phase, averaging them
+            // silently erases actual speech. Choose the louder channel only in
+            // this narrow cancellation case; preserve normal stereo mixing.
+            val dominantEnergy = maxOf(leftEnergy, rightEnergy)
+            val chooseChannel = if (inputChannels == 2 &&
+                dominantEnergy > 1e-9 && monoEnergy < dominantEnergy * 0.04
+            ) {
+                if (leftEnergy >= rightEnergy) 0 else 1
+            } else -1
+            if (chooseChannel >= 0) {
+                for (i in 0 until frameCount) {
+                    mono[i] = (pcm16[i * 2 + chooseChannel] * scale).coerceIn(-1f, 1f)
+                }
             }
         }
 

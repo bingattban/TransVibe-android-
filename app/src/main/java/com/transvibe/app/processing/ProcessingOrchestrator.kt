@@ -20,6 +20,7 @@ import com.transvibe.app.domain.TranscriptSegment
 import com.transvibe.app.domain.TranslationEngine
 import com.transvibe.app.domain.VadEngine
 import com.transvibe.app.media.AudioResampler
+import com.transvibe.app.media.PcmSignalMetrics
 import com.transvibe.app.media.BoundaryReconciler
 import com.transvibe.app.media.Timebase
 import com.transvibe.app.models.ModelLifecycleManager
@@ -238,6 +239,18 @@ class ProcessingOrchestrator(
                                 actualEngineId = asrEngine.engineId,
                                 actualModelId = model.modelId
                             )
+                            // Native model initialization can succeed even
+                            // when its incoming audio is silent or corrupted.
+                            // Record numeric signal levels only; no private PCM
+                            // or recognized words ever enter Android logs.
+                            val levels = PcmSignalMetrics.analyze(seg.pcmSamples)
+                            Log.i(
+                                "TransVibeASR",
+                                "input segment=${seg.index} samples=${levels.samples} " +
+                                    "rmsDbfs=${levels.rmsDbfs} peak=${levels.peak} " +
+                                    "finite=${levels.valid} sourceLang=$sourceLang"
+                            )
+                            check(levels.valid) { "ASR_INVALID_PCM: decoded audio contains non-finite samples" }
                             asrCalls.incrementAndGet()
                             val res = asrEngine.transcribe(seg, sourceLang).getOrThrow()
                             val recognized = res.segments.filter { it.text.isNotBlank() }
@@ -286,7 +299,7 @@ class ProcessingOrchestrator(
                 jobDao.updateProgress(jobId, JobState.FAILED.name, resumeFromUs, System.currentTimeMillis())
                 _progress.value = ProcessingProgress(
                     jobId, JobState.FAILED, "Audio transcription failed",
-                    0L, totalAudioMs, System.currentTimeMillis() - startedMs,
+                    if (decodedFrames.get() > 0) totalAudioMs else 0L, totalAudioMs, System.currentTimeMillis() - startedMs,
                     asrEngine.engineId, model.modelId, warningMessage = message
                 )
                 return Result.failure(IllegalStateException(message))

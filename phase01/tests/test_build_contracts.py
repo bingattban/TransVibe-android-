@@ -143,6 +143,8 @@ class Phase00SourceProtection(unittest.TestCase):
             # CI-discovered source-language routing bug fixed during Phase 01.
             'app/src/main/java/com/transvibe/app/domain/Policies.kt',
             'app/src/test/java/com/transvibe/app/ModelCatalogTest.kt',
+            # 20-Nov phone log: protect 2-channel audio against phase cancellation.
+            'app/src/main/java/com/transvibe/app/media/AudioResampler.kt',
             # On-device Whisper Tiny 41s/41s translation-stall regression.
             'app/src/main/java/com/transvibe/app/translation/TranslationPipeline.kt',
             'app/src/main/java/com/transvibe/app/translation/MlKitTranslationEngine.kt',
