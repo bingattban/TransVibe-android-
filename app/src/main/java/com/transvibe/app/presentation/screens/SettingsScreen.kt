@@ -24,6 +24,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import com.transvibe.app.BuildConfig
 import com.transvibe.app.presentation.TransVibeViewModel
+import com.transvibe.app.persistence.UserPreferences
 import com.transvibe.app.presentation.theme.GlassCard
 import com.transvibe.app.presentation.theme.TransVibeColors
 
@@ -37,7 +38,7 @@ fun SettingsScreen(
 ) {
     val app = LocalContext.current.applicationContext as Application
     val cacheMb by viewModel.cacheSizeMb.collectAsState()
-    val prefs by viewModel.preferences.collectAsState()
+    val prefs by viewModel.preferences.collectAsState(initial = UserPreferences())
     val colors = MaterialTheme.colorScheme
     var diagPreview by remember { mutableStateOf<String?>(null) }
 
