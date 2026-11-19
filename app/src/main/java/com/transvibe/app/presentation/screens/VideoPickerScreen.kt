@@ -1,5 +1,9 @@
 package com.transvibe.app.presentation.screens
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.VideoFile
+import com.transvibe.app.presentation.components.ScreenHeroHeader
+
 import android.app.Application
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -48,10 +52,14 @@ fun VideoPickerScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(if (isArabic) "اختيار وفحص الفيديو" else "Video Picker & Inspector", style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
-            OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
-        }
+        ScreenHeroHeader(
+            title = if (isArabic) "اختيار وفحص الفيديو" else "Select Video",
+            subtitle = if (isArabic) "اختر فيديو من الجهاز للتحليل" else "Choose media from your device",
+            icon = Icons.Rounded.VideoFile,
+            trailing = {
+                OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
+            }
+        )
 
         Button(
             onClick = { pickerLauncher.launch(arrayOf("video/*", "audio/*")) },
