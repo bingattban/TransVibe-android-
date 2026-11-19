@@ -47,7 +47,7 @@ fun ModelLibraryScreen(
         }
 
         transferMsg?.let {
-            Text(it, color = TransVibeColors.WarmGold)
+            Text(it, color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)
         }
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(10.dp)) {
@@ -56,8 +56,8 @@ fun ModelLibraryScreen(
                 val status = rec?.status ?: ModelStatus.NOT_INSTALLED
                 val statusColor = when (status) {
                     ModelStatus.READY -> TransVibeColors.EmeraldSuccess
-                    ModelStatus.CORRUPT, ModelStatus.FAILED -> TransVibeColors.CoralError
-                    else -> TransVibeColors.WarmGold
+                    ModelStatus.CORRUPT, ModelStatus.FAILED -> androidx.compose.material3.MaterialTheme.colorScheme.error
+                    else -> androidx.compose.material3.MaterialTheme.colorScheme.tertiary
                 }
                 GlassCard(
                     modifier = Modifier
@@ -65,7 +65,7 @@ fun ModelLibraryScreen(
                         .clickable { onModelClick(model.modelId) }
                 ) {
                     Text(if (isArabic) model.displayNameAr else model.displayNameEn)
-                    Text(model.physicalFileName, color = TransVibeColors.ElectricCyan)
+                    Text(model.physicalFileName, color = androidx.compose.material3.MaterialTheme.colorScheme.primary)
                     Text("${model.engineType.name} • ${status.name}", color = statusColor)
                 }
             }
