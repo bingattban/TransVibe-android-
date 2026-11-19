@@ -102,6 +102,11 @@ android {
         }
         create("preview") {
             initWith(getByName("debug"))
+            // Use the SAME owner's release certificate for both distributable APKs.
+            // Preview remains separately installable thanks to .preview applicationIdSuffix.
+            if (hasValidSigningProps) {
+                signingConfig = signingConfigs.getByName("release")
+            }
             applicationIdSuffix = ".preview"
             versionNameSuffix = "-preview"
             matchingFallbacks += listOf("debug")
@@ -364,43 +369,33 @@ val verifyManualLocalLibraries = tasks.register("verifyManualLocalLibraries") {
 tasks.matching { it.name in setOf("preDebugBuild", "prePreviewBuild", "preReleaseBuild") }
     .configureEach { dependsOn(verifyManualLocalLibraries) }
 
-// Phase 01: fail closed on actual release builds. Debug/Preview may use a
-// visibly marked JNI diagnostic, but no release artifact may be produced with
-// either the missing whisper.cpp source OR a missing Sherpa-ONNX Android AAR.
-// This validates presence/ABI packaging, NOT native inference correctness.
+// Phase 01 release is a signed first-model candidate, not an assertion that
+// untested Sherpa models already work. Real native Whisper and provenance
+// remain mandatory; phone inference acceptance is a separate model gate.
 val verifyReleaseNativeDependencies = tasks.register("verifyReleaseNativeDependencies") {
     group = "verification"
-    description = "Require real Whisper and Sherpa runtime assets before release packaging"
+    description = "Require signed real native Whisper and validated provenance for first-model release"
     doLast {
-        check(!isCoGoArm64Host) {
-            "RELEASE BLOCKED: Code On The Go ARM64 host cannot compile the " +
-                "required Whisper JNI library. A diagnostic-only APK cannot be released."
+        // Phase 01 release is specifically the first-model ggml-tiny.bin build.
+        // Later Sherpa-based model stages have their OWN release/acceptance gates.
+        check(hasValidSigningProps) {
+            "RELEASE BLOCKED: owner's release keystore/alias/passwords are missing or invalid."
         }
-        val whisperDir = file("src/main/cpp/third_party/whisper.cpp")
-        val whisperHeader = file("src/main/cpp/third_party/whisper.cpp/include/whisper.h")
-        check(file("src/main/cpp/third_party/whisper.cpp/CMakeLists.txt").isFile && whisperHeader.isFile) {
-            "RELEASE BLOCKED: real whisper.cpp source/header missing from $whisperDir. " +
-                "The debug diagnostic JNI is NOT a working speech-recognition engine."
+        check(hasPrebuiltWhisperJni) {
+            "RELEASE BLOCKED: verified prebuilt ARM64 libtransvibe_whisper.so is missing. " +
+                "A diagnostic JNI build is not an accepted release."
         }
-        val sherpaArchives = fileTree("libs") {
-            include("sherpa-onnx-*.aar")
-        }.files.toList()
-        check(sherpaArchives.size == 1) {
-            "RELEASE BLOCKED: expected exactly one verified sherpa-onnx-*.aar in app/libs; found ${sherpaArchives.size}."
+        check(file("libs/native-provenance.json").isFile) {
+            "RELEASE BLOCKED: native-provenance.json is missing."
         }
-        ZipFile(sherpaArchives.single()).use { archive ->
-            val entries: Set<String> = archive.entries().asSequence().map { entry -> entry.name }.toSet()
-            check("classes.jar" in entries) {
-                "RELEASE BLOCKED: Sherpa AAR does not contain classes.jar."
-            }
-            check("jni/arm64-v8a/libonnxruntime.so" in entries) {
-                "RELEASE BLOCKED: Sherpa AAR does not contain arm64-v8a libonnxruntime.so."
-            }
-            check(entries.any { it.startsWith("jni/arm64-v8a/") &&
-                    it.endsWith(".so") && it.contains("sherpa", ignoreCase = true) }) {
-                "RELEASE BLOCKED: Sherpa AAR lacks an arm64-v8a Sherpa JNI library."
-            }
+        // verifyManualLocalLibraries (preReleaseBuild dependency) validates the
+        // binary SHA-256, its Kotlin/JNI source hashes, ARM64 ELF and provenance.
+        // Do NOT require the untested Sherpa engine while verifying Whisper Tiny.
+        val sherpaArchives = fileTree("libs") { include("sherpa-onnx-*.aar") }.files.toList()
+        check(sherpaArchives.size <= 1) {
+            "RELEASE BLOCKED: multiple Sherpa AAR versions would conflict."
         }
+        logger.lifecycle("First-model release preflight: signed native Whisper verified; Sherpa models not approved yet.")
     }
 }
 
