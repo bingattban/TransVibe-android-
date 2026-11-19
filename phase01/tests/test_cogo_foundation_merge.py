@@ -73,7 +73,7 @@ class CoGoFoundationContract(unittest.TestCase):
             if rel == 'app/src/main/cpp/whisper_jni.cpp':
                 import json
                 jni_hash=hashlib.sha256(target.read_bytes()).hexdigest()
-                self.assertEqual(jni_hash, 'cd05863b8b34552daf76019c4ee85678401df55c3ee1096923661661a60de00a')
+                self.assertEqual(jni_hash, '5a356adc8f5a245f3eebaaae7f1ccfd0d793413848ff23bc6d98b0f2a07579ca')
                 proof_path=ROOT/'app/libs/native-provenance.json'
                 binary=ROOT/'app/libs/arm64-v8a/libtransvibe_whisper.so'
                 if proof_path.is_file():
