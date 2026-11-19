@@ -11,6 +11,7 @@ import android.net.Uri
 import android.os.Build
 import android.os.IBinder
 import android.os.PowerManager
+import android.util.Log
 import androidx.core.app.NotificationCompat
 import com.transvibe.app.MainActivity
 import com.transvibe.app.R
@@ -86,7 +87,10 @@ class TransVibeProcessingService : Service() {
                     sourceLang = sourceLang,
                     targetLang = targetLang,
                     existingJobId = jobId
-                )
+                ).onFailure { err ->
+                    // Only the diagnostic code/message; never emit media URI or transcript.
+                    Log.e("TransVibeProcessing", "Job ${jobId.take(8)} failed: ${err.message?.take(180)}")
+                }
             } catch (_: CancellationException) {
             } finally {
                 releaseWakeLock()
