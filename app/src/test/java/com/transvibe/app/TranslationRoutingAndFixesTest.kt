@@ -10,6 +10,8 @@ import com.transvibe.app.translation.TranslationRouteKind
 import com.transvibe.app.translation.TranslationRoutingPolicy
 import com.transvibe.app.translation.TranslationStageStatus
 import kotlinx.coroutines.test.runTest
+import kotlinx.coroutines.delay
+import org.junit.Assert.assertNotNull
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -52,6 +54,46 @@ class TranslationRoutingAndFixesTest {
         assertEquals(TranslationStageStatus.COMPLETED, outcome.stage1Status)
         assertEquals(TranslationStageStatus.FAILED, outcome.stage2Status)
         assertEquals("Hello world", outcome.englishIntermediate)
+    }
+
+    @Test
+    fun missingOfflinePackFailsWithoutCallingTranslation() = runTest {
+        var calls = 0
+        val fake = object : TranslationEngine {
+            override suspend fun isPackInstalled(sourceLang: String, targetLang: String) = false
+            override suspend fun downloadPack(sourceLang: String, targetLang: String) =
+                Result.failure<Unit>(IllegalStateException("offline"))
+            override suspend fun translate(
+                segmentId: String, text: String, sourceLang: String, targetLang: String
+            ): Result<TranslationResult> {
+                calls++
+                return Result.failure(IllegalStateException("must not be called"))
+            }
+            override fun close() {}
+        }
+        val outcome = TranslationPipeline(fake).translateSegment("one", "Hello", "en", "ar")
+        assertFalse(outcome.isFullyComplete)
+        assertTrue(outcome.errorMessage!!.contains("TRANSLATION_PACK_MISSING"))
+        assertEquals(0, calls)
+    }
+
+    @Test
+    fun blockedTranslationEndsWithExplicitTimeoutInsteadOfInfiniteSpinner() = runTest {
+        val fake = object : TranslationEngine {
+            override suspend fun isPackInstalled(sourceLang: String, targetLang: String) = true
+            override suspend fun downloadPack(sourceLang: String, targetLang: String) = Result.success(Unit)
+            override suspend fun translate(
+                segmentId: String, text: String, sourceLang: String, targetLang: String
+            ): Result<TranslationResult> {
+                delay(300_000L)
+                return Result.success(TranslationResult(segmentId, "مرحبا", sourceLang, targetLang, 1L))
+            }
+            override fun close() {}
+        }
+        val outcome = TranslationPipeline(fake).translateSegment("one", "Hello", "en", "ar")
+        assertFalse(outcome.isFullyComplete)
+        assertNotNull(outcome.errorMessage)
+        assertTrue(outcome.errorMessage!!.contains("TRANSLATION_TIMEOUT"))
     }
 
     @Test
