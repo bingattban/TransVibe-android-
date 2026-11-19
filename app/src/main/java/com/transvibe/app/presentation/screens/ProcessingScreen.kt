@@ -49,6 +49,9 @@ fun ProcessingScreen(
         }
     }
     val progressTimestamp = remember(progress) { SystemClock.elapsedRealtime() }
+    val noTranscript = progress?.state == JobState.FAILED && listOf(
+        "AUDIO_NO_PCM", "VAD_NO_SPEECH", "ASR_NO_TRANSCRIPT"
+    ).any { progress?.warningMessage?.contains(it) == true }
 
     Column(
         modifier = Modifier
@@ -89,15 +92,21 @@ fun ProcessingScreen(
                     LinearProgressIndicator(modifier = Modifier.fillMaxWidth(), color = MaterialTheme.colorScheme.tertiary)
                 }
                 if (p.state == JobState.FAILED || p.state == JobState.INTERRUPTED_RECOVERABLE) {
-                    Text(p.warningMessage ?: if (isArabic) "توقفت المعالجة؛ راجع حزم الترجمة" else "Processing stopped; check translation packs",
-                        color = MaterialTheme.colorScheme.error)
+                    val warning = if (noTranscript && isArabic) {
+                        when {
+                            p.warningMessage?.contains("AUDIO_NO_PCM") == true -> "تعذر استخراج الصوت من الفيديو. تأكد من وجود مسار صوتي صالح."
+                            p.warningMessage?.contains("VAD_NO_SPEECH") == true -> "لم يُكتشف كلام واضح في الصوت. تحقق من مستوى الصوت وأعد المحاولة."
+                            else -> "لم ينتج Whisper أي كلمات. تحقق من لغة الفيديو والنموذج، ثم أعد المحاولة."
+                        }
+                    } else p.warningMessage ?: if (isArabic) "توقفت المعالجة؛ راجع حزم الترجمة" else "Processing stopped; check translation packs"
+                    Text(warning, color = MaterialTheme.colorScheme.error)
                 }
             } else {
                 Text(if (isArabic) "جاري التهيئة..." else "Initializing...")
             }
         }
 
-        if (jobId != null && progress?.state in setOf(JobState.COMPLETED, JobState.FAILED, JobState.INTERRUPTED_RECOVERABLE)) {
+        if (jobId != null && !noTranscript && progress?.state in setOf(JobState.COMPLETED, JobState.FAILED, JobState.INTERRUPTED_RECOVERABLE)) {
             Button(onClick = { onOpenResults(jobId!!) }, modifier = Modifier.fillMaxWidth().height(52.dp), shape = RoundedCornerShape(16.dp)) {
                 Text(if (isArabic) "عرض النص المحفوظ وإعادة الترجمة" else "Open saved transcript & retry translation")
             }
