@@ -16,7 +16,7 @@ object EmptyTranscriptRecovery {
     private const val FRAME_SAMPLES = 480 // 30 ms
     private const val MIN_FRAMES = 8 // 240 ms sustained audible audio
     private const val FRAME_RMS_THRESHOLD = 0.0035f
-    private const val PEAK_THRESHOLD = 0.009f
+    private const val PEAK_THRESHOLD = 0.006f
 
     fun isAudibleSpeechCandidate(pcm: FloatArray): Boolean {
         if (pcm.size < SAMPLE_RATE / 2) return false
