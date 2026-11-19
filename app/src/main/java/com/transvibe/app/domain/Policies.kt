@@ -38,10 +38,8 @@ object RoutingPolicy {
                 IllegalArgumentException("${model.displayNameEn} supports Arabic speech only.")
             )
         }
-        if (targetLang == "ar" && requestedSourceLang == "ar") {
-            // Arabic speech -> Arabic transcript-only route is always valid
-            return Result.success(Unit)
-        }
+        // Arabic transcript-only is valid only when the selected engine
+        // actually supports Arabic input; do not bypass the allowlist.
         if (requestedSourceLang != "auto" &&
             model.supportedLanguages.isNotEmpty() &&
             !model.supportedLanguages.contains(requestedSourceLang)
