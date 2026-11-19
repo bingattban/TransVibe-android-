@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_title">مرحباً بك في TransVibe!</string>
+    <string name="welcome_tagline">حَوِّل فيديوهاتك من أي لغة إلى العربية بخصوصية تامة.</string>
+    <string name="welcome_description">يسعدنا انضمامك! TransVibe هو مساعدك الذكي الذي يعتمد على أحدث تقنيات الذكاء الاصطناعي لمعالجة الفيديوهات وترجمتها محلياً على هاتفك.</string>
+    <string name="welcome_features_title">ماذا يقدم لك التطبيق؟</string>
+    <string name="welcome_feature_privacy">• 🔒 خصوصية تامة: معالجة وترجمة محلية (بدون إنترنت).</string>
+    <string name="welcome_feature_customization">• 🎨 تحكم كامل: خصص مظهر الترجمة، حجمها، وتوقيتها ليناسب ذوقك.</string>
+    <string name="welcome_feature_export">• 💾 مرونة التصدير: احفظ ترجماتك بصيغتي SRT و WebVTT بسهولة.</string>
+    <string name="welcome_cta">اختر الفيديو الخاص بك الآن، ودع الباقي علينا.</string>
+    <string name="welcome_slogan">TransVibe — شاهد، افهم، وتَرجم بثقة.</string>
+    <string name="welcome_start_now">ابدأ الآن</string>
+</resources>
