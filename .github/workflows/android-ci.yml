@@ -179,9 +179,11 @@ jobs:
     name: Auto-merge tested same-repository PR (never bypass protections)
     needs: [source-gate, unit-tests, native-compat, signed-apks]
     if: >-
-      github.event_name == 'pull_request' &&
-      github.event.pull_request.head.repo.full_name == github.repository &&
-      github.event.pull_request.draft == false
+      (github.event_name == 'pull_request' &&
+       github.event.pull_request.head.repo.full_name == github.repository &&
+       github.event.pull_request.draft == false) ||
+      (github.event_name == 'workflow_dispatch' &&
+       github.ref != 'refs/heads/main')
     runs-on: ubuntu-24.04
     permissions:
       contents: write
@@ -189,14 +191,21 @@ jobs:
       actions: write
     env:
       GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      PR_NUMBER: ${{ github.event.pull_request.number }}
-      EXPECTED_SHA: ${{ github.event.pull_request.head.sha }}
+      PR_NUMBER: ${{ github.event.pull_request.number || '' }}
+      EXPECTED_SHA: ${{ github.event.pull_request.head.sha || github.sha }}
     steps:
       - name: Merge tested head SHA only and require all protections
         run: |
           set -euo pipefail
-          actual="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER" --jq '.head.sha')"
-          test "$actual" = "$EXPECTED_SHA" || { echo "::error::PR changed since tests"; exit 1; }
+          if [ -z "$PR_NUMBER" ]; then
+            PR_NUMBER="$(gh pr list -R "$GITHUB_REPOSITORY" --head "$GITHUB_REF_NAME" --base main --state open --json number --jq '.[0].number // empty')"
+          fi
+          test -n "$PR_NUMBER" || { echo "::error::No open matching PR"; exit 1; }
+          pr="$(gh api "repos/$GITHUB_REPOSITORY/pulls/$PR_NUMBER")"
+          test "$(jq -r .head.sha <<< "$pr")" = "$EXPECTED_SHA" || { echo "::error::PR changed since tests"; exit 1; }
+          test "$(jq -r .head.repo.full_name <<< "$pr")" = "$GITHUB_REPOSITORY"
+          test "$(jq -r .base.ref <<< "$pr")" = main
+          test "$(jq -r .draft <<< "$pr")" = false
           gh pr merge "$PR_NUMBER" -R "$GITHUB_REPOSITORY" --squash --match-head-commit "$EXPECTED_SHA"
       - name: Trigger post-merge build against merged main SHA
         run: gh workflow run android-ci.yml -R "$GITHUB_REPOSITORY" --ref main
