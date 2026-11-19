@@ -1,5 +1,21 @@
 package com.transvibe.app.presentation.screens
 
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.border
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.foundation.layout.size
+import com.transvibe.app.R
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -28,13 +44,31 @@ fun WelcomeScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .padding(24.dp),
+            .verticalScroll(rememberScrollState())
+            .padding(horizontal = 20.dp, vertical = 24.dp),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Box(
+            modifier = Modifier.size(180.dp).background(
+                Brush.radialGradient(listOf(
+                    MaterialTheme.colorScheme.primary.copy(alpha = 0.26f),
+                    MaterialTheme.colorScheme.background.copy(alpha = 0f)
+                )), CircleShape
+            ).border(1.dp, MaterialTheme.colorScheme.primary.copy(alpha = 0.55f), CircleShape),
+            contentAlignment = Alignment.Center
+        ) {
+            Image(
+                painter = painterResource(R.drawable.transvibe_welcome_logo),
+                contentDescription = if (isArabic) "شعار TransVibe" else "TransVibe logo",
+                modifier = Modifier.size(160.dp),
+                contentScale = ContentScale.Fit
+            )
+        }
+        Spacer(Modifier.height(16.dp))
         Text(
             text = "TransVibe",
-            color = TransVibeColors.ElectricCyan,
+            color = MaterialTheme.colorScheme.primary,
             style = androidx.compose.material3.MaterialTheme.typography.headlineMedium
         )
         Spacer(Modifier.height(12.dp))
@@ -44,9 +78,13 @@ fun WelcomeScreen(
                     "تفريغ وترجمة الفيديو إلى العربية محلياً بالكامل على جهازك دون رفع أي ملفات."
                 else
                     "Offline-first video transcription and Arabic subtitling directly on your device.",
-                color = TransVibeColors.TextPrimary
+                color = MaterialTheme.colorScheme.onSurface
             )
-            Spacer(Modifier.height(16.dp))
+            Spacer(Modifier.height(12.dp))
+            Text(if (isArabic) "🔒 معالجة محلية تحفظ خصوصيتك" else "🔒 Private on-device processing")
+            Text(if (isArabic) "🎞 تفريغ الصوت وتحرير الترجمة" else "🎞 Transcribe and edit timed subtitles")
+            Text(if (isArabic) "💾 تصدير SRT وVTT" else "💾 Export SRT and VTT")
+            Spacer(Modifier.height(14.dp))
             Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
                 OutlinedButton(onClick = { onSelectLanguage("ar") }, modifier = Modifier.weight(1f)) {
                     Text("العربية (RTL)")
@@ -59,10 +97,12 @@ fun WelcomeScreen(
         Spacer(Modifier.height(24.dp))
         Button(
             onClick = onContinue,
-            modifier = Modifier.fillMaxWidth(),
-            colors = ButtonDefaults.buttonColors(containerColor = TransVibeColors.ElectricCyan)
+            modifier = Modifier.fillMaxWidth().height(52.dp),
+            shape = RoundedCornerShape(16.dp),
+            colors = ButtonDefaults.buttonColors(containerColor = MaterialTheme.colorScheme.primary)
         ) {
-            Text(if (isArabic) "بدء الاستخدام" else "Get Started", color = TransVibeColors.MidnightNavy)
+            Text(if (isArabic) "بدء الاستخدام" else "Get Started", color = MaterialTheme.colorScheme.onPrimary,
+                fontWeight = FontWeight.Bold)
         }
     }
 }
