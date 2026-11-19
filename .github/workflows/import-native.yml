@@ -80,4 +80,7 @@ jobs:
           git push -u origin "$branch"
           gh pr create --base main --head "$branch" \
             --title "Native: verified Whisper ARM64 (SO run ${SOURCE_RUN_ID})" \
-            --body "Automated verified artifact import from **bingattban/TransVibe-so-** run ${SOURCE_RUN_ID}. Validated source JNI SHA-256, ELF ARM64, load alignment, dependencies and symbol exports. **DO NOT MERGE until Android CI and actual phone testing/owner approval.**"
+            --body "Verified first-model native artifact from TransVibe-so- run ${SOURCE_RUN_ID}. The PR is automatically eligible for merge ONLY after JVM tests, native contract verification, and successful owner-signed Preview/Release APKs. Physical phone inference acceptance remains a separate gate before model 2."
+          # PRs created by GITHUB_TOKEN do not automatically trigger ordinary
+          # pull_request workflows; workflow_dispatch is the supported exception.
+          gh workflow run android-ci.yml --ref "$branch"
