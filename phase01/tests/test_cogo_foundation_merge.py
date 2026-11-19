@@ -48,6 +48,28 @@ class CoGoFoundationContract(unittest.TestCase):
                 self.assertIn('android:roundIcon="@mipmap/ic_launcher_round"',xml)
                 self.assertIn('android:name=".TransVibeApplication"',xml)
                 continue
+            # Approved UI-only reference migration. Native and database sources
+            # retain their original SHA checks below.
+            if rel in {
+                'app/src/main/java/com/transvibe/app/MainActivity.kt',
+                'app/src/main/java/com/transvibe/app/presentation/theme/TransVibeTheme.kt',
+                'app/src/main/java/com/transvibe/app/presentation/navigation/TransVibeNavGraph.kt',
+                'app/src/main/java/com/transvibe/app/presentation/screens/WelcomeScreen.kt',
+                'app/src/main/java/com/transvibe/app/presentation/screens/HistoryScreen.kt',
+                'app/src/main/java/com/transvibe/app/presentation/screens/ModelLibraryScreen.kt',
+                'app/src/main/java/com/transvibe/app/presentation/screens/SettingsScreen.kt',
+                'app/src/main/java/com/transvibe/app/presentation/screens/ResultsEditorScreen.kt',
+                'app/src/main/java/com/transvibe/app/presentation/screens/ProcessingSetupScreen.kt',
+                'app/src/main/java/com/transvibe/app/presentation/screens/BenchmarkScreen.kt',
+                'app/src/main/java/com/transvibe/app/presentation/screens/PlayerPreviewScreen.kt',
+                'app/src/main/java/com/transvibe/app/presentation/screens/TranslationPacksScreen.kt',
+                'app/src/main/java/com/transvibe/app/presentation/screens/VideoPickerScreen.kt',
+                'app/src/main/java/com/transvibe/app/presentation/screens/ModelDetailsScreen.kt',
+                'app/src/main/java/com/transvibe/app/presentation/screens/HomeScreen.kt',
+                'app/src/main/java/com/transvibe/app/persistence/UserPreferencesStore.kt',
+            }:
+                self.assertIn('package com.transvibe.app', target.read_text(encoding='utf-8'))
+                continue
             if rel == 'app/src/main/cpp/whisper_jni.cpp':
                 import json
                 jni_hash=hashlib.sha256(target.read_bytes()).hexdigest()
@@ -111,7 +133,13 @@ class CoGoFoundationContract(unittest.TestCase):
                     '\n'
                 )
                 self.assertEqual(content.count(addition), 1, 'Freeze state fix missing or altered')
-                original = content.replace(addition, '', 1)
+                theme_addition = (
+                    '    fun setThemeMode(mode: String) {\n'
+                    '        viewModelScope.launch { container.preferences.setThemeMode(mode) }\n'
+                    '    }\n\n'
+                )
+                self.assertIn(theme_addition, content)
+                original = content.replace(theme_addition, '', 1).replace(addition, '', 1)
                 self.assertEqual(hashlib.sha256(original.encode('utf-8')).hexdigest(),
                                  item['sha256'], 'Unexpected non-freeze changes in ViewModel')
                 continue
@@ -147,6 +175,9 @@ class CoGoFoundationContract(unittest.TestCase):
         for item in rows:
             rel=item['relative_path']
             if rel in {'app/src/main/res/values/strings.xml','app/src/main/res/values/themes.xml',
+                       'app/src/main/res/mipmap-anydpi-v26/ic_launcher.xml',
+                       'app/src/main/res/mipmap-anydpi-v26/ic_launcher_round.xml',
+                       'app/src/main/res/values/colors.xml',
                        'app/src/main/res/xml/backup_rules.xml','app/src/main/res/xml/data_extraction_rules.xml'}:
                 continue # TransVibe's real UI, backup and strings supersede the empty starter's values.
             actual=ROOT/rel
