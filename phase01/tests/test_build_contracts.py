@@ -59,13 +59,18 @@ class BuildContracts(unittest.TestCase):
         self.assertIn('TRANSVIBE_ALLOW_DIAGNOSTIC_JNI=ON', build)
         self.assertIn('TRANSVIBE_ALLOW_DIAGNOSTIC_JNI=OFF', build)
 
-    def test_release_checks_missing_whisper_and_sherpa_aars(self):
+    def test_first_model_release_requires_signed_verified_real_whisper(self):
         build = source('app/build.gradle.kts')
-        self.assertIn('verifyReleaseNativeDependencies', build)
-        self.assertIn('preReleaseBuild', build)
+        # Stage 1 is Whisper Tiny; Sherpa is a later, separately gated model.
+        # Missing real prebuilt JNI OR signing credentials MUST still fail closed.
+        for token in ('verifyReleaseNativeDependencies', 'preReleaseBuild',
+                      'check(hasPrebuiltWhisperJni)', 'check(hasValidSigningProps)',
+                      'native-provenance.json', 'libs/arm64-v8a/libtransvibe_whisper.so',
+                      'jsonHash("binary_sha256")', 'jsonHash("jni_source_sha256")',
+                      'jsonHash("kotlin_source_sha256")'):
+            self.assertIn(token, build)
         self.assertIn('sherpa-onnx-', build)
-        self.assertIn('libonnxruntime.so', build)
-        self.assertIn('third_party/whisper.cpp', build)
+        self.assertNotIn('check(sherpaArchives.size == 1)', build)
 
     def test_preview_separate_and_debug_warning_visible(self):
         build = source('app/build.gradle.kts')
@@ -135,6 +140,8 @@ class Phase00SourceProtection(unittest.TestCase):
             'build.gradle.kts',
             'app/src/main/java/com/transvibe/app/nativebridge/WhisperNativeBridge.kt',
             'app/src/main/cpp/whisper_jni.cpp',
+            # CI-discovered source-language routing bug fixed during Phase 01.
+            'app/src/main/java/com/transvibe/app/domain/Policies.kt',
             'app/src/main/AndroidManifest.xml',
             'settings.gradle.kts',
             'gradle.properties',
