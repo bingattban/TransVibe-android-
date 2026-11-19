@@ -14,7 +14,8 @@ data class UserPreferences(
     val uiLanguage: String = "ar",
     val onboardingCompleted: Boolean = false,
     val defaultModelId: String = "whisper-tiny",
-    val bilingualExportDefault: Boolean = false
+    val bilingualExportDefault: Boolean = false,
+    val themeMode: String = "system"
 )
 
 class UserPreferencesStore(private val context: Context) {
@@ -23,6 +24,7 @@ class UserPreferencesStore(private val context: Context) {
         val ONBOARDING_COMPLETED = booleanPreferencesKey("onboarding_completed")
         val DEFAULT_MODEL_ID = stringPreferencesKey("default_model_id")
         val BILINGUAL_EXPORT = booleanPreferencesKey("bilingual_export")
+        val THEME_MODE = stringPreferencesKey("ui_theme_mode")
     }
 
     val preferences: Flow<UserPreferences> = context.dataStore.data.map { prefs ->
@@ -30,8 +32,14 @@ class UserPreferencesStore(private val context: Context) {
             uiLanguage = prefs[Keys.UI_LANGUAGE] ?: "ar",
             onboardingCompleted = prefs[Keys.ONBOARDING_COMPLETED] ?: false,
             defaultModelId = prefs[Keys.DEFAULT_MODEL_ID] ?: "whisper-tiny",
-            bilingualExportDefault = prefs[Keys.BILINGUAL_EXPORT] ?: false
+            bilingualExportDefault = prefs[Keys.BILINGUAL_EXPORT] ?: false,
+            themeMode = prefs[Keys.THEME_MODE] ?: "system"
         )
+    }
+
+    suspend fun setThemeMode(mode: String) {
+        require(mode in setOf("system", "light", "dark"))
+        context.dataStore.edit { it[Keys.THEME_MODE] = mode }
     }
 
     suspend fun setUiLanguage(lang: String) {
