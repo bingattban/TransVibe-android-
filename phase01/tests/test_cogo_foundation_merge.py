@@ -50,9 +50,17 @@ class CoGoFoundationContract(unittest.TestCase):
                 continue
             if rel == 'app/src/main/cpp/whisper_jni.cpp':
                 import json
-                proof=json.loads((ROOT/'app/libs/native-provenance.json').read_text())
-                self.assertEqual(proof['jni_source_sha256'], hashlib.sha256(target.read_bytes()).hexdigest())
-                self.assertEqual(proof['binary_sha256'], hashlib.sha256((ROOT/'app/libs/arm64-v8a/libtransvibe_whisper.so').read_bytes()).hexdigest())
+                jni_hash=hashlib.sha256(target.read_bytes()).hexdigest()
+                self.assertEqual(jni_hash, 'cd05863b8b34552daf76019c4ee85678401df55c3ee1096923661661a60de00a')
+                proof_path=ROOT/'app/libs/native-provenance.json'
+                binary=ROOT/'app/libs/arm64-v8a/libtransvibe_whisper.so'
+                if proof_path.is_file():
+                    proof=json.loads(proof_path.read_text(encoding='utf-8'))
+                    self.assertTrue(binary.is_file(), 'Missing ELF for native provenance')
+                    self.assertEqual(proof['jni_source_sha256'], jni_hash)
+                    self.assertEqual(proof['binary_sha256'], hashlib.sha256(binary.read_bytes()).hexdigest())
+                else:
+                    self.assertFalse(binary.exists(), 'Unverified JNI binary cannot be accepted')
                 continue
             if rel == 'app/src/main/java/com/transvibe/app/nativebridge/WhisperNativeBridge.kt':
                 # Approved Phase 01: guard JNI linkage probes if the installed .so
@@ -108,7 +116,9 @@ class CoGoFoundationContract(unittest.TestCase):
         self.assertIn('ZipFile(sherpaArchives.single())',app)
         self.assertIn('import java.util.zip.ZipFile',app)
         self.assertTrue((ROOT/'app/src/main/cpp/CMakeLists.txt').exists())
-        for path in ['release.properties','release.keystore','.git','build','.gradle','.cg']:
+        # .git is legitimate within a GitHub Actions checkout. Test only for
+        # secret or generated project content, not VCS metadata created by CI.
+        for path in ['release.properties','release.keystore','build','.gradle','.cg']:
             self.assertFalse((ROOT/path).exists(),f'Secret/cache leaked: {path}')
 
     def test_cogo_icons_and_full_app_both_present(self):

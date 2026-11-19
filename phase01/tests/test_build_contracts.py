@@ -155,9 +155,19 @@ class Phase00SourceProtection(unittest.TestCase):
                 self.fail(f'Expected Phase01 fix missing: {relative}')
             elif relative not in expected_modified:
                 self.assertEqual(actual, previous, f'Unrelated source modified: {relative}')
+        # A source-only Git checkout intentionally has NO native binary yet.
+        # Validate the exact JNI source both before and after a verified SO import.
         import json
-        proof = json.loads((ROOT/'app/libs/native-provenance.json').read_text())
-        self.assertEqual(proof['jni_source_sha256'], hashlib.sha256(
-            (ROOT/'app/src/main/cpp/whisper_jni.cpp').read_bytes()).hexdigest())
-        self.assertEqual(proof['builder_repository'], 'bingattban/TransVibe-so-')
+        jni_hash = hashlib.sha256((ROOT/'app/src/main/cpp/whisper_jni.cpp').read_bytes()).hexdigest()
+        self.assertEqual(jni_hash, 'cd05863b8b34552daf76019c4ee85678401df55c3ee1096923661661a60de00a')
+        proof_path = ROOT/'app/libs/native-provenance.json'
+        native = ROOT/'app/libs/arm64-v8a/libtransvibe_whisper.so'
+        if proof_path.is_file():
+            proof = json.loads(proof_path.read_text(encoding='utf-8'))
+            self.assertTrue(native.is_file(), 'Native provenance must accompany the ELF')
+            self.assertEqual(proof['jni_source_sha256'], jni_hash)
+            self.assertEqual(proof['binary_sha256'], hashlib.sha256(native.read_bytes()).hexdigest())
+            self.assertEqual(proof['builder_repository'], 'bingattban/TransVibe-so-')
+        else:
+            self.assertFalse(native.exists(), 'Unverified native binary must never be accepted')
         self.assertEqual(changed, expected_modified)
