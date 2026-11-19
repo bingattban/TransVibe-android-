@@ -25,7 +25,10 @@ class CoGoArm64NativeBuildGuardTest(unittest.TestCase):
         self.assertRegex(self.content, r'if \(!isCoGoArm64Host && !hasPrebuiltWhisperJni\)\s*\{\s*externalNativeBuild\s*\{\s*cmake\s*\{\s*path\s*=')
 
     def test_release_gated_when_mobile_native_build_skipped(self):
-        self.assertRegex(self.content, r'doLast\s*\{\s*check\(!isCoGoArm64Host\)')
+        # Prebuilt native allows Code On The Go to produce a real signed
+        # release; missing native or a diagnostic stub must still block it.
+        self.assertIn('check(hasPrebuiltWhisperJni)', self.content)
+        self.assertIn('check(hasValidSigningProps)', self.content)
         self.assertIn('RELEASE BLOCKED', self.content)
         self.assertIn('verifyReleaseNativeDependencies', self.content)
 
