@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="welcome_title">Welcome to TransVibe!</string>
+    <string name="welcome_tagline">Translate videos from any language into Arabic while keeping your content private.</string>
+    <string name="welcome_description">We are glad you are here! TransVibe is your smart assistant, using advanced AI technology to process videos and translate them locally on your phone.</string>
+    <string name="welcome_features_title">What can you do with TransVibe?</string>
+    <string name="welcome_feature_privacy">• 🔒 Full privacy: On-device processing and translation (without an internet connection after the required models are ready).</string>
+    <string name="welcome_feature_customization">• 🎨 Complete control: Customize the appearance, size, and timing of subtitles to suit your needs.</string>
+    <string name="welcome_feature_export">• 💾 Flexible export: Save subtitles as SRT or WebVTT files with ease.</string>
+    <string name="welcome_cta">Choose your video now and let us take care of the rest.</string>
+    <string name="welcome_slogan">TransVibe — Watch, understand, and translate with confidence.</string>
+    <string name="welcome_start_now">Get started</string>
+</resources>
