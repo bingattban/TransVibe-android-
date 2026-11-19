@@ -1,5 +1,9 @@
 package com.transvibe.app.presentation.screens
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.History
+import com.transvibe.app.presentation.components.ScreenHeroHeader
+
 import android.app.Application
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -39,10 +43,14 @@ fun HistoryScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(if (isArabic) "المشاريع والسجل" else "Projects & History", style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
-            OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
-        }
+        ScreenHeroHeader(
+            title = if (isArabic) "المشاريع والسجل" else "Projects & History",
+            subtitle = if (isArabic) "الملفات المحفوظة ونتائج المعالجة" else "Saved processing history",
+            icon = Icons.Rounded.History,
+            trailing = {
+                OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
+            }
+        )
 
         LazyColumn(verticalArrangement = Arrangement.spacedBy(8.dp)) {
             items(jobs, key = { it.jobId }) { job ->
