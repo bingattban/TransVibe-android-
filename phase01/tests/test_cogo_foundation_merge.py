@@ -71,6 +71,22 @@ class CoGoFoundationContract(unittest.TestCase):
                 for symbol in ('nativeInit', 'nativeTranscribe', 'nativeFree', 'nativeCancel'):
                     self.assertIn(symbol,source)
                 continue
+            if rel == 'app/src/main/java/com/transvibe/app/presentation/TransVibeViewModel.kt':
+                # Approved CI Kotlin fix only: restore the observed persisted
+                # benchmark freeze state flow. Removing the exact insertion
+                # must reproduce the original source hash byte for byte.
+                content = target.read_text(encoding='utf-8')
+                addition = (
+                    '    // Freeze decisions are persisted in Room and observed by the benchmark UI.\n'
+                    '    private val _freezeRecords = MutableStateFlow<Map<String, FreezeRecordEntity>>(emptyMap())\n'
+                    '    val freezeRecords: StateFlow<Map<String, FreezeRecordEntity>> = _freezeRecords.asStateFlow()\n'
+                    '\n'
+                )
+                self.assertEqual(content.count(addition), 1, 'Freeze state fix missing or altered')
+                original = content.replace(addition, '', 1)
+                self.assertEqual(hashlib.sha256(original.encode('utf-8')).hexdigest(),
+                                 item['sha256'], 'Unexpected non-freeze changes in ViewModel')
+                continue
             if rel == 'app/src/main/java/com/transvibe/app/presentation/screens/HomeScreen.kt':
                 # The only approved UI change is the explicit diagnostic warning;
                 # removing it must recreate the exact previous source SHA.

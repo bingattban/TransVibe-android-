@@ -128,6 +128,7 @@ class Phase00SourceProtection(unittest.TestCase):
             'app/src/main/cpp/CMakeLists.txt',
             'app/src/main/java/com/transvibe/app/TransVibeApplication.kt',
             'app/src/main/java/com/transvibe/app/presentation/screens/SettingsScreen.kt',
+            'app/src/main/java/com/transvibe/app/presentation/TransVibeViewModel.kt',
             'app/src/main/java/com/transvibe/app/presentation/screens/HomeScreen.kt',
             'gradle/wrapper/gradle-wrapper.properties',
             'gradle/libs.versions.toml',
