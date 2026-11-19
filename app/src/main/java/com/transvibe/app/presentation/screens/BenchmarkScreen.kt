@@ -7,6 +7,8 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
@@ -43,6 +45,7 @@ fun BenchmarkScreen(
     Column(
         modifier = Modifier
             .fillMaxSize()
+            .verticalScroll(rememberScrollState())
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
@@ -52,7 +55,7 @@ fun BenchmarkScreen(
         }
 
         GlassCard(modifier = Modifier.fillMaxWidth()) {
-            Text("Tiny Freeze Status: ${tinyFreeze?.status ?: "UNDER_DEVELOPMENT"}", color = TransVibeColors.WarmGold)
+            Text("Tiny Freeze Status: ${tinyFreeze?.status ?: "UNDER_DEVELOPMENT"}", color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)
             Text("Owner Approved: ${tinyFreeze?.approvedByOwner ?: false}")
             Text("Reference Clip: ${corpusUri?.lastPathSegment ?: "None selected"}")
         }
@@ -67,7 +70,7 @@ fun BenchmarkScreen(
 
         summaries.forEach { s ->
             GlassCard(modifier = Modifier.fillMaxWidth()) {
-                Text("Threads: ${s.threads} (${s.runCount} runs)", color = TransVibeColors.ElectricCyan)
+                Text("Threads: ${s.threads} (${s.runCount} runs)", color = androidx.compose.material3.MaterialTheme.colorScheme.primary)
                 Text("Median Inference: ${s.medianInferenceMs} ms | p90: ${s.p90InferenceMs} ms")
                 Text("Peak PSS: ${s.maxPeakPssKb} KB")
             }
