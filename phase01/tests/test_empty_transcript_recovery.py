@@ -19,6 +19,10 @@ class EmptyTranscriptRecoveryContracts(unittest.TestCase):
         self.assertIn("decodedFrames.get()", s)
         self.assertIn("asrCalls.get()", s)
 
+    def test_resume_never_skips_audio_when_only_checkpoint_exists_without_text(self):
+        s = source("app/src/main/java/com/transvibe/app/processing/ProcessingOrchestrator.kt")
+        self.assertIn("validResume && transcriptDao.getSegmentsForJob(jobId).any", s)
+
     def test_fallback_is_bounded_and_never_uses_all_silence(self):
         s = source("app/src/main/java/com/transvibe/app/processing/ProcessingOrchestrator.kt")
         p = source("app/src/main/java/com/transvibe/app/processing/EmptyTranscriptRecovery.kt")
