@@ -1,5 +1,9 @@
 package com.transvibe.app.presentation.screens
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Speed
+import com.transvibe.app.presentation.components.ScreenHeroHeader
+
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -49,10 +53,14 @@ fun BenchmarkScreen(
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(if (isArabic) "دراسة أداء Whisper Tiny" else "Tiny Benchmark Study", style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
-            OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
-        }
+        ScreenHeroHeader(
+            title = if (isArabic) "دراسة أداء Whisper Tiny" else "Tiny Benchmark Study",
+            subtitle = if (isArabic) "مقارنة زمن التعرف والصحة والدقة" else "Measure speed and recognition quality",
+            icon = Icons.Rounded.Speed,
+            trailing = {
+                OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
+            }
+        )
 
         GlassCard(modifier = Modifier.fillMaxWidth()) {
             Text("Tiny Freeze Status: ${tinyFreeze?.status ?: "UNDER_DEVELOPMENT"}", color = androidx.compose.material3.MaterialTheme.colorScheme.tertiary)
