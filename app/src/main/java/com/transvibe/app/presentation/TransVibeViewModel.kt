@@ -70,6 +70,10 @@ class TransVibeViewModel(private val container: AppContainer) : ViewModel() {
     private val _recoveryError = MutableStateFlow<String?>(null)
     val recoveryError: StateFlow<String?> = _recoveryError.asStateFlow()
 
+    // Freeze decisions are persisted in Room and observed by the benchmark UI.
+    private val _freezeRecords = MutableStateFlow<Map<String, FreezeRecordEntity>>(emptyMap())
+    val freezeRecords: StateFlow<Map<String, FreezeRecordEntity>> = _freezeRecords.asStateFlow()
+
     private val _benchmarkSummaries = MutableStateFlow<List<ThreadBenchmarkSummary>>(emptyList())
     val benchmarkSummaries: StateFlow<List<ThreadBenchmarkSummary>> = _benchmarkSummaries.asStateFlow()
 
