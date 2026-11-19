@@ -1,6 +1,7 @@
 import java.util.Properties
 import java.io.FileInputStream
 import java.util.zip.ZipFile
+import java.security.MessageDigest
 
 plugins {
     alias(libs.plugins.android.application)
@@ -333,9 +334,9 @@ val verifyManualLocalLibraries = tasks.register("verifyManualLocalLibraries") {
             val provenance = provenanceFile.readText(Charsets.UTF_8)
             fun jsonHash(key: String): String? = Regex("\"" + key + "\"\\s*:\\s*\"([a-f0-9]{64})\"")
                 .find(provenance)?.groupValues?.get(1)
-            val digest = java.security.MessageDigest.getInstance("SHA-256")
+            val digest = MessageDigest.getInstance("SHA-256")
             fun sha256Of(path: java.io.File): String = digest.digest(path.readBytes())
-                .joinToString("") { byte -> "%02x".format(byte) }
+                .joinToString("") { byte: Byte -> "%02x".format(byte) }
             check(provenance.contains("bingattban/TransVibe-so-") &&
                 provenance.contains("arm64-v8a") && provenance.contains("ggml-tiny.bin")) {
                 "LOCAL LIBRARY ERROR: native provenance must identify the approved builder/model/ABI."
