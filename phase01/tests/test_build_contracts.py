@@ -142,6 +142,7 @@ class Phase00SourceProtection(unittest.TestCase):
             'app/src/main/cpp/whisper_jni.cpp',
             # CI-discovered source-language routing bug fixed during Phase 01.
             'app/src/main/java/com/transvibe/app/domain/Policies.kt',
+            'app/src/test/java/com/transvibe/app/ModelCatalogTest.kt',
             'app/src/main/AndroidManifest.xml',
             'settings.gradle.kts',
             'gradle.properties',
