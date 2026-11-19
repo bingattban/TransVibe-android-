@@ -120,7 +120,11 @@ class ProcessingOrchestrator(
                     currentPreprocessingVersion = 1,
                     currentProfileVersion = profile.profileVersion
                 )
-                if (validResume) existing.lastCheckpointUs else 0L
+                // A persisted time checkpoint alone cannot prove that any ASR
+                // words survived; otherwise a retry jumps to the end again.
+                val hasSavedTranscript = validResume && transcriptDao.getSegmentsForJob(jobId)
+                    .any { it.originalText.isNotBlank() }
+                if (hasSavedTranscript) existing.lastCheckpointUs else 0L
             } else 0L
 
             val now = System.currentTimeMillis()
