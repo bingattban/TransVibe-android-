@@ -94,6 +94,10 @@ class TransVibeViewModel(private val container: AppContainer) : ViewModel() {
         viewModelScope.launch { container.preferences.setUiLanguage(lang) }
     }
 
+    fun setThemeMode(mode: String) {
+        viewModelScope.launch { container.preferences.setThemeMode(mode) }
+    }
+
     fun completeOnboarding() {
         viewModelScope.launch { container.preferences.setOnboardingCompleted(true) }
     }
