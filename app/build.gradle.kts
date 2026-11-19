@@ -347,6 +347,9 @@ val verifyManualLocalLibraries = tasks.register("verifyManualLocalLibraries") {
             check(jsonHash("jni_source_sha256") == sha256Of(file("src/main/cpp/whisper_jni.cpp"))) {
                 "LOCAL LIBRARY ERROR: prebuilt Whisper was not built for this exact JNI source."
             }
+            check(jsonHash("kotlin_source_sha256") == sha256Of(file("src/main/java/com/transvibe/app/nativebridge/WhisperNativeBridge.kt"))) {
+                "LOCAL LIBRARY ERROR: prebuilt Whisper was not built for this exact Kotlin JNI contract."
+            }
         } else {
             logger.warn("LOCAL LIBRARIES: no app/libs/arm64-v8a/libtransvibe_whisper.so; Whisper ASR unavailable in CoGo Debug/Preview.")
         }

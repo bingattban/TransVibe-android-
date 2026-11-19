@@ -47,12 +47,20 @@ jobs:
             test "$(jq -r .head_sha native-run.json)" = "$EXPECTED_SHA"
           fi
       - name: Download exactly the verified ARM64 artifact
+        env:
+          GH_TOKEN: ${{ secrets.TRANSVIBE_SO_READ_TOKEN }}
         run: |
+          set -euo pipefail
+          test -n "$GH_TOKEN" || { echo "::error::Set TRANSVIBE_SO_READ_TOKEN with Actions:read permission for TransVibe-so-"; exit 1; }
           mkdir -p .native-incoming
           gh run download "$SOURCE_RUN_ID" \
             -R "$SOURCE_REPO" \
             -n transvibe-whisper-arm64-api26 \
             -D .native-incoming
+      - name: Enforce the Android source SHA used to build the library
+        run: |
+          set -euo pipefail
+          test "$(jq -r .app_source_commit .native-incoming/native-manifest.json)" = "$(git rev-parse HEAD)" || { echo "::error::Native build used a different Android commit; rebuild native on latest main"; exit 1; }
       - name: Verify checksum, JNI source, ELF and dependencies before copying
         run: |
           python3 tools/verify_native_import.py --incoming .native-incoming --app-root app
