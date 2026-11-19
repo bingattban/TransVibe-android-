@@ -1,24 +1,42 @@
-# إعداد ربط مستودعي TransVibe
+# إعداد TransVibe: الدمج الآلي والإصداران الموقعان
 
-## المستودعات العامة
+## المستودعان
 - Android: https://github.com/bingattban/TransVibe-android-
 - SO: https://github.com/bingattban/TransVibe-so-
 
-لا تعتمد على أي مستودع قديم.
+## السياسة المعتمدة
+كل Pull Request داخلي غير Draft يصبح مؤهلا للدمج تلقائيا **فقط** بعد نجاح جميع الاختبارات، توافق JNI والملفات الأصلية، وتجميع نسختي Preview وRelease الموقعتين والتحقق من شهادتيهما. لا يُستخدم bypass أو force merge أو الدمج قبل ظهور النتيجة. عند فشل أي شرط يبقى PR مفتوحا.
 
-## ترابط آمن دون دمج تلقائي
-1. لا تنفذ الخطوة التالية حتى تكمل استيراد **كامل** مصدر تطبيق Android وتنجح اختبارات Android. المصدر المبدئي وحده لا يكفي.
-2. بعد اعتماد إعدادات GitHub Actions ودمجها بموافقة المالك، افتح مستودع `TransVibe-so-`، ثم Settings → Secrets and variables → Actions → New repository secret.
-3. الاسم: `TRANSVIBE_ANDROID_DISPATCH_TOKEN`. القيمة: fine-grained GitHub Personal Access Token بصلاحية **Contents: Read and write** على المستودع `TransVibe-android-` وحده، مع مدة صلاحية قصيرة. لا ترسل التوكن في المحادثة ولا ترفعه في الملفات.
-4. في مستودع Android افتح Settings → Actions → General ثم تحقق من السماح لـ GitHub Actions بإنشاء Pull Requests، مع تقييد صلاحيات `GITHUB_TOKEN` إلى ما يحدده كل workflow.
-5. كل بناء ناجح لـ SO على `main` يرسل `repository_dispatch` إلى Android بعد وجود السر. سير العمل على Android يتحقق من هوية المصدر ونتيجة التشغيل ورقم الالتزام، ثم يحمل Artifact ويتحقق من بصمته ورموز JNI قبل نسخ `.so`.
-6. النتيجة **Pull Request جديد** لا دمج تلقائي. يجب نجاح اختبارات المصدر والتجميع والتثبيت على الهاتف قبل أن يعتمد المالك الدمج.
+## الأسرار المطلوبة
+### مستودع Android
+Settings → Secrets and variables → Actions → Repository secrets:
+- `SIGNING_KEY_BASE64`: تمثيل Base64 لملف التوقيع الخاص؛ لا ترسله للمحادثة.
+- `KEYSTORE_PASSWORD`: كلمة مرور المخزن.
+- `KEY_ALIAS`: الاسم الداخلي للمفتاح.
+- `KEY_PASSWORD`: كلمة مرور المفتاح.
+- `TRANSVIBE_SO_READ_TOKEN`: رمز محدود الصلاحية للوصول إلى Actions: read في مستودع TransVibe-so- لعملية نقل المكتبة الأصلية.
+يمكن ضبط Repository variable باسم `TRANSVIBE_SIGNING_CERT_SHA256` لتثبيت بصمة شهادة التوقيع عبر جميع التشغيلات، بعد استخراجها من شهادة المفتاح الأصلية.
+
+### مستودع SO
+- `TRANSVIBE_ANDROID_DISPATCH_TOKEN`: fine-grained PAT له Contents: Read and write على مستودع Android المحدد، مع الصلاحية المناسبة لاستدعاء repository_dispatch (يحتاج Contents: write).
+لا تستخدم نفس الرمز ككلمة مرور توقيع ولا تنشر أي رمز في سجل عام.
+
+## إعداد GitHub
+- Settings → Actions → General: اسمح بصلاحيات GITHUB_TOKEN التي يطلبها سير العمل (contents/pull-requests/actions write فقط لمهمة الدمج).
+- فعّل خيار Allow GitHub Actions to create and approve pull requests في مستودع Android ليعمل استيراد المكتبات الآلي، إن كان الخيار متاحا.
+- فعّل حماية main باستخدام Required status checks لاختبارات المصدر، واختبارات JVM، وفحص JNI، وإنتاج الحزمتين الموقعتين. لا تسمح بتجاوز الحماية.
+- إذا تعذر دمج PR رغم نجاح المسارات فتأكد من إعدادات صلاحيات Actions والحماية؛ لا تتجاوز الفحوص.
+
+## دورتا العمل
+1. يبني SO مكتبة arm64-v8a/API 26 من مصدر JNI مطابق ويلتزم بالبصمات والاختبارات. بعد النجاح يدمج PR الداخلي تلقائيا (إذا كان Ready).
+2. تشغيل SO الناجح على main يرسل dispatch لمستودع Android، إذا ضُبط الرمز.
+3. يتحقق Android من هوية تشغيل SO ومن SHA-256 وJNI وELF ويُنشئ PR للمكتبة في app/libs/arm64-v8a/.
+4. لأن PR ينشأ بواسطة GITHUB_TOKEN، يستدعي المستورد workflow_dispatch صراحة لتشغيل الاختبارات على فرع الاستيراد.
+5. يبدأ Android بالاختبارات ثم يبني **نسختين فقط** من ملفات APK: Preview وRelease، بنفس مفتاح التوقيع. ZIP المشروع المستقل ليس نسخة APK ثالثة.
+6. عند نجاح جميع الشروط يُدمج PR تلقائيا على main ويعاد بناء الحزمتين من main، ثم تنزّل حزمة المصدر للبناء عبر واجهة Code On The Go.
 
 ## بناء Code On The Go
-بعد أن تصبح نسخة Android صحيحة اجلب مصدر المشروع الكامل من Artifact الخاص بـ GitHub Actions، وافتح جذر Gradle في Code On The Go، ثم استخدم زر Build الرسومي. لا تشغل أدوات NDK على الهاتف.
+استخرج ZIP المصدر من Artifact، وافتح جذر Gradle، واستخدم زر Build. النماذج الصوتية لا تُضمّن في المستودعات. سجّل السرعة والذاكرة والدقة والأخطاء على الهاتف. لا تبدأ النموذج الثاني قبل اعتماد نتائج Whisper Tiny.
 
-## مرحلية النماذج
-الآن Whisper Tiny فقط؛ تحفظ النماذج ببيانات التطبيق بعد التثبيت، وليس في GitHub أو `app/libs`. بعد الاختبارات العملية يقرر المالك قبول النموذج ثم الانتقال إلى التالي.
-
-## ما لم يثبت بعد
-نجاح ملفات Workflow أو بناء مكتبة `.so` لا يثبت نجاح Gradle على Android أو عمل النموذج على هاتفك. لا ترسل إشعار نجاح فعلي قبل الأدلة.
+## شرط البدء
+إذا بقي main يحتوي مصدر التطبيق فقط دون مكتبة JNI الموثقة، أو لم تُضبط رموز الاتصال اللازمة، **لن يستطيع مسار النسخة النهائية المرور ولن يُدمج**. يجب معالجة عائق التكامل دون استخدام مكتبة وهمية.
