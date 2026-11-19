@@ -1,5 +1,9 @@
 package com.transvibe.app.presentation.screens
 
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.rounded.Settings
+import com.transvibe.app.presentation.components.ScreenHeroHeader
+
 import android.app.Application
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -53,10 +57,14 @@ fun SettingsScreen(
             .padding(horizontal = 16.dp, vertical = 20.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-            Text(if (isArabic) "الإعدادات والخصوصية" else "Settings & Privacy", style = androidx.compose.material3.MaterialTheme.typography.headlineMedium)
-            OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
-        }
+        ScreenHeroHeader(
+            title = if (isArabic) "الإعدادات والخصوصية" else "Settings & Privacy",
+            subtitle = if (isArabic) "التخصيص، التنقل، الخصوصية والموارد" else "Appearance, privacy and resources",
+            icon = Icons.Rounded.Settings,
+            trailing = {
+                OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
+            }
+        )
 
         GlassCard(modifier = Modifier.fillMaxWidth()) {
             Text(if (isArabic) "لغة الواجهة" else "UI Language")
