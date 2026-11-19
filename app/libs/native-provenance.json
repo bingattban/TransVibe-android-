@@ -1,0 +1,23 @@
+{
+  "abi": "arm64-v8a",
+  "app_repository": "bingattban/TransVibe-android-",
+  "app_source_commit": "4420fa48059fa70ad848a6dfedce0829fff0a4ea",
+  "binary_sha256": "af52650966fadb97ba1ee3e2e697d108a950dda9e0aee79cea354b4e85912a23",
+  "builder_repository": "bingattban/TransVibe-so-",
+  "builder_run_id": "44601888549",
+  "engine": "whisper.cpp",
+  "first_model": "ggml-tiny.bin",
+  "jni_source_sha256": "cd05863b8b34552daf76019c4ee85678401df55c3ee1096923661661a60de00a",
+  "kotlin_source_sha256": "0af07b012ee35e314f3627ab15a61e142433890f8e25888468880a02a2835169",
+  "min_sdk": 26,
+  "needed": [
+    "libandroid.so",
+    "libc.so",
+    "libdl.so",
+    "liblog.so",
+    "libm.so"
+  ],
+  "schema_version": 2,
+  "verification": "ELF-ABI-JNI-link-only; physical device inference NOT verified",
+  "whisper_commit": "d1be6fde11ac6e0407606b4e42fe72d34add8037"
+}
