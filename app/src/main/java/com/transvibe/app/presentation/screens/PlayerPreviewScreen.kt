@@ -47,22 +47,31 @@ import kotlinx.coroutines.delay
 
 @Composable
 fun PlayerPreviewScreen(
+    jobId: String,
     viewModel: TransVibeViewModel,
     isArabic: Boolean,
     onBack: () -> Unit
 ) {
     val context = LocalContext.current
-    val media by viewModel.inspectedMedia.collectAsState()
+    val jobMeta by viewModel.activeJobEntity.collectAsState()
     val cues by viewModel.activeCues.collectAsState()
+    val mediaUriString = previewMediaUriForJob(jobId, jobMeta?.jobId, jobMeta?.mediaUriString)
+    val currentCues = if (mediaUriString != null) cues else emptyList()
     var currentPosMs by remember { mutableLongStateOf(0L) }
     var fontSizeSp by remember { mutableFloatStateOf(16f) }
 
-    val player = remember {
-        ExoPlayer.Builder(context).build().apply {
-            media?.uriString?.let { uriStr ->
-                setMediaItem(MediaItem.fromUri(Uri.parse(uriStr)))
-                prepare()
-            }
+    // The selected video may not be the video's URI for this saved job.
+    LaunchedEffect(jobId) { viewModel.loadJobCues(jobId) }
+
+    val player = remember(context) { ExoPlayer.Builder(context).build() }
+    // The persisted job may arrive after composition. Rebind media on change.
+    LaunchedEffect(player, mediaUriString) {
+        player.stop()
+        player.clearMediaItems()
+        currentPosMs = 0L
+        if (mediaUriString != null) {
+            player.setMediaItem(MediaItem.fromUri(Uri.parse(mediaUriString)))
+            player.prepare()
         }
     }
 
@@ -73,11 +82,11 @@ fun PlayerPreviewScreen(
         }
     }
 
-    DisposableEffect(Unit) {
+    DisposableEffect(player) {
         onDispose { player.release() }
     }
 
-    val activeCue = cues.firstOrNull {
+    val activeCue = currentCues.firstOrNull {
         val posUs = currentPosMs * 1000L
         posUs in it.startUs..it.endUs
     }
@@ -131,7 +140,7 @@ fun PlayerPreviewScreen(
             color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant
         )
         LazyColumn(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            items(cues, key = { it.cueId }) { cue ->
+            items(currentCues, key = { it.cueId }) { cue ->
                 GlassCard(
                     modifier = Modifier
                         .fillMaxWidth()
