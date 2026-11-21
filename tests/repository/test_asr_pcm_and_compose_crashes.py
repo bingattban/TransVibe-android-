@@ -20,9 +20,12 @@ class PcmAndComposeRegression(unittest.TestCase):
 
     def test_prevent_unbounded_nested_scrolling(self):
         s = read("app/src/main/java/com/transvibe/app/presentation/screens/TranslationPacksScreen.kt")
-        self.assertIn(".verticalScroll(rememberScrollState())", s)
-        self.assertNotIn("LazyColumn(", s)
-        self.assertIn("packs.forEach", s)
+        # One bounded LazyColumn replacing the old eager verticalScroll is safe:
+        # no scrollable child is nested into another vertical scroller.
+        self.assertIn("LazyColumn(", s)
+        self.assertEqual(s.count("LazyColumn("), 1)
+        self.assertIn("items(packs, key", s)
+        self.assertNotIn(".verticalScroll(rememberScrollState())", s)
 
     def test_prevent_stereo_phase_cancellation_data_loss(self):
         s = read("app/src/main/java/com/transvibe/app/media/AudioResampler.kt")

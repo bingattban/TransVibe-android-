@@ -14,7 +14,7 @@ class PlayerPreviewJobSourceTest(unittest.TestCase):
     def test_route_passes_job_id_into_preview(self):
         nav = NAV.read_text(encoding='utf-8')
         self.assertIn('Routes.PLAYER,', nav)
-        self.assertIn('val previewJobId = backStack.arguments?.getString("jobId") ?: ""', nav)
+        self.assertIn('val previewJobId = entry.arguments?.getString("jobId") ?: ""', nav)
         self.assertIn('jobId = previewJobId,', nav)
 
     def test_preview_recovers_persisted_job_and_reacts_to_uri_changes(self):
