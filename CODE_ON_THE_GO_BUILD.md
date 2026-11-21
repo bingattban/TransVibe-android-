@@ -36,3 +36,34 @@ source-preparation environment; these require owner's UI-generated logs.
 For the Arabic device verification steps, see `docs/COTG_VERIFICATION_GUIDE_AR.md`.
 The optional shell-based evidence collector is `scripts/validate_on_code_on_the_go.sh`.
 Do not uninstall the existing production app to resolve a signing problem.
+
+
+## CoGo Debug / LogSender / source libraries (21 Nov 2026)
+
+LogSender is intentionally KEPT. Do not disable its Code On The Go Gradle
+injection or remove LogSenderInstaller. Android 14+ may require
+FOREGROUND_SERVICE_DATA_SYNC: the permission is declared only for Debug and
+Preview manifests. An Android 12+ background-start restriction can still
+cause LogSenderInstaller to throw before MainActivity; this is a Code On The
+Go plugin/service lifecycle issue, not a missing ML Kit dependency. The
+permission alone cannot resolve that restriction.
+
+Source always retains the verified ARM64 JNI library and native provenance:
+app/libs/arm64-v8a/libtransvibe_whisper.so and app/libs/native-provenance.json.
+AndroidX Core and ML Kit common/translation/language-id have explicit
+version-pinned Gradle runtime dependencies. Their compiled classes must be
+merged into classes*.dex within the installed APK; do not copy AndroidX
+or ML Kit AARs manually into app/libs on top of Gradle dependencies.
+
+After :app:assembleDebug, :app:assemblePreview or :app:assembleRelease,
+Gradle runs a verification that fails the build if its actual APK is missing
+MlKitInitProvider, CoreComponentFactory, MainActivity, TransVibeApplication
+or the ARM64 Whisper binary. This verifies packaged code but is not a
+real-device launch test. DO NOT install the CoGo APK if this verification fails.
+
+Important: the source ZIP does NOT contain every Google Maven AAR/JAR.
+The pinned Gradle dependencies must be downloaded at least once during
+Sync/build (and can then be cached locally). Large speech/translation model
+weights are user-managed downloads and remain excluded from the repository.
+A fully offline-from-clean-cache build requires separately packaging the
+complete resolved dependency graph with approved redistribution rights.
