@@ -1,7 +1,7 @@
 """Phase 01 pre-fix reproducible build-contract tests.
 
 These are static contracts, NOT substitutes for Gradle compilation or an Android device.
-Run: python3 -m unittest discover -s phase01/tests -p 'test_*.py' -v
+Run: python3 -m unittest discover -s tests/repository -p 'test_*.py' -v
 """
 from pathlib import Path
 import hashlib
@@ -129,6 +129,8 @@ class Phase00SourceProtection(unittest.TestCase):
         import csv
         expected_modified = {
             'CODE_ON_THE_GO_BUILD.md',
+            'README_AR.md',
+            'README_EN.md',
             'app/build.gradle.kts',
             'app/src/main/cpp/CMakeLists.txt',
             'app/src/main/java/com/transvibe/app/TransVibeApplication.kt',
@@ -171,7 +173,7 @@ class Phase00SourceProtection(unittest.TestCase):
             'settings.gradle.kts',
             'gradle.properties',
         }
-        inventory = ROOT / 'phase00/PHASE00_SOURCE_INVENTORY_SHA256.csv'
+        inventory = ROOT / 'tests/fixtures/PHASE00_SOURCE_INVENTORY_SHA256.csv'
         with inventory.open(encoding='utf-8-sig', newline='') as inp:
             rows = list(csv.DictReader(inp))
         self.assertEqual(len(rows), 98)
@@ -179,7 +181,10 @@ class Phase00SourceProtection(unittest.TestCase):
         for item in rows:
             relative = item['ZIP relative path'].removeprefix('TransVibe/')
             file_path = ROOT / relative
-            self.assertTrue(file_path.is_file(), f'Original file disappeared: {relative}')
+            if relative == 'PHASE_REPORT.md':
+                self.assertFalse(file_path.exists(), 'Archived implementation report must be retired')
+                continue
+            self.assertTrue(file_path.is_file(), f'Original project source disappeared: {relative}')
             actual = hashlib.sha256(file_path.read_bytes()).hexdigest()
             previous = item['SHA-256 original member']
             if actual != previous:

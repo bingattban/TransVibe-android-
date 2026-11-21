@@ -1,6 +1,6 @@
 #!/bin/sh
-# Phase 01 — on-device build evidence collector. No installation or data changes.
-# Usage: sh phase01/validate_on_code_on_the_go.sh [log-directory]
+# TransVibe Android on-device build evidence collector. No installation or data changes.
+# Usage: sh scripts/validate_on_code_on_the_go.sh [log-directory]
 set -u
 
 HERE=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd -P) || exit 2
@@ -8,11 +8,11 @@ ROOT=$(CDPATH= cd -- "$HERE/.." && pwd -P) || exit 2
 LOGS=${1:-"$HERE/cotg_device_logs"}
 mkdir -p "$LOGS" || exit 2
 LOGS=$(CDPATH= cd -- "$LOGS" && pwd -P) || exit 2
-SUMMARY="$LOGS/PHASE01_BUILD_RESULTS.txt"
+SUMMARY="$LOGS/ANDROID_BUILD_RESULTS.txt"
 : > "$SUMMARY" || exit 2
 
 record() { printf '%s\n' "$*" | tee -a "$SUMMARY"; }
-record 'PHASE 01 — Code On The Go build gate'
+record 'TransVibe Android — Code On The Go build gate'
 record 'IMPORTANT: PASS below covers build tasks ONLY, NOT ARM64 install/launch or native speech recognition.'
 record 'No uninstall / signing / existing app data modification is performed by this script.'
 record "ROOT: $ROOT"
@@ -83,7 +83,7 @@ for relative in app/build/outputs/apk/debug/app-debug.apk app/build/outputs/apk/
         shasum -a 256 "$file" >> "$LOGS/APK_SHA256SUMS.txt"
     fi
 done
-record 'PASS: Phase 01 automated Gradle build gates passed on this device.'
+record 'PASS: Android automated Gradle build gates passed on this device.'
 record 'DEVICE GATE STILL REQUIRED: manually install and launch ONLY the com.transvibe.app.preview APK; document hardware/OS/ABI, logs, and any crash.'
 record 'ASR IS NOT VALIDATED: native diagnostic JNI is not real speech recognition.'
 exit 0

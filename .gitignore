@@ -18,3 +18,6 @@ release.properties
 native-models/
 models/
 # Do not ignore app/libs/arm64-v8a/*.so: imported, verified binary is intentional.
+
+# Local phone-side build evidence is never part of source control.
+cotg_device_logs/

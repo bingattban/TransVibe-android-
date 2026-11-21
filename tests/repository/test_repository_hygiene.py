@@ -20,7 +20,7 @@ REQUIRED = (
     "gradle/wrapper/gradle-wrapper.jar",
     "gradlew",
     ".github/workflows/android-ci.yml",
-    "phase01/tests/test_build_contracts.py",
+    "tests/repository/test_build_contracts.py",
 )
 
 RETIRED = (
@@ -47,14 +47,16 @@ class RepositoryHygieneTest(unittest.TestCase):
                 self.assertFalse((ROOT / rel).exists(), f"Unused starter file reintroduced: {rel}")
 
     def test_historical_logs_and_reports_not_checked_in(self):
-        for rel in ("phase01/logs", "phase01/reports"):
-            with self.subTest(directory=rel):
-                self.assertFalse((ROOT / rel).exists(), f"Archived build output reintroduced: {rel}")
-        for path in (ROOT / "phase01").rglob("*"):
+        for rel in ("phase00", "phase01", "scripts/cotg_device_logs"):
+            with self.subTest(path=rel):
+                self.assertFalse((ROOT / rel).exists(), f"Archived directory reintroduced: {rel}")
+        for rel in ("PHASE_REPORT.md", "GITHUB_SOURCE_IMPORT_AR.md",
+                    "scripts/phase00_forensic_contracts.py"):
+            with self.subTest(path=rel):
+                self.assertFalse((ROOT / rel).exists(), f"Retired project history reintroduced: {rel}")
+        for path in (ROOT / "tests/repository").rglob("*"):
             if path.is_file():
-                self.assertNotIn(path.suffix, (".log",), f"Archived device/build log: {path}")
-        self.assertFalse((ROOT / "phase00/PHASE00_TEST_RESULTS.txt").exists())
-        self.assertFalse((ROOT / "phase01/merge/MERGED_FILE_SHA256.csv").exists())
+                self.assertNotEqual(path.suffix, ".log", f"Archived build log: {path}")
 
     def test_compose_entrypoint_replaces_obsolete_xml_activity(self):
         activity = (ROOT / "app/src/main/java/com/transvibe/app/MainActivity.kt").read_text(encoding="utf-8")

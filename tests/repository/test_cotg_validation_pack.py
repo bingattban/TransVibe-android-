@@ -9,7 +9,7 @@ import tempfile
 import unittest
 
 ROOT = Path(__file__).resolve().parents[2]
-VALIDATOR = ROOT / 'phase01' / 'validate_on_code_on_the_go.sh'
+VALIDATOR = ROOT / 'scripts' / 'validate_on_code_on_the_go.sh'
 
 
 class DeviceValidationCollectorTests(unittest.TestCase):
@@ -34,7 +34,7 @@ class DeviceValidationCollectorTests(unittest.TestCase):
         self.assertNotIn('rm -rf', src)
 
     def test_cotg_handoff_requires_separate_real_install_launch(self):
-        notes = (ROOT / 'phase01' / 'completion' / 'COTG_VERIFICATION_GUIDE_AR.md').read_text(encoding='utf-8')
+        notes = (ROOT / 'docs' / 'COTG_VERIFICATION_GUIDE_AR.md').read_text(encoding='utf-8')
         self.assertIn('com.transvibe.app.preview', notes)
         self.assertIn('لا تحذف', notes)
         self.assertIn('تثبيت', notes)
