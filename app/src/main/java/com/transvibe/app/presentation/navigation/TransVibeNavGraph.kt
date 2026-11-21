@@ -247,8 +247,10 @@ fun TransVibeNavGraph(
             composable(
                 Routes.PLAYER,
                 arguments = listOf(navArgument("jobId") { type = NavType.StringType })
-            ) {
+            ) { backStack ->
+                val previewJobId = backStack.arguments?.getString("jobId") ?: ""
                 PlayerPreviewScreen(
+                    jobId = previewJobId,
                     viewModel = viewModel,
                     isArabic = isArabic,
                     onBack = { navController.popBackStack() }
