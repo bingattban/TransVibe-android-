@@ -1,20 +1,40 @@
 package com.transvibe.app.presentation.screens
 
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.rounded.Settings
-import com.transvibe.app.presentation.components.ScreenHeroHeader
-
 import android.app.Application
+import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.Spring
+import androidx.compose.animation.core.spring
+import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.verticalScroll
-import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.rounded.ArrowForward
+import androidx.compose.material.icons.rounded.BugReport
+import androidx.compose.material.icons.rounded.DeleteSweep
+import androidx.compose.material.icons.rounded.Info
+import androidx.compose.material.icons.rounded.Language
+import androidx.compose.material.icons.rounded.Memory
+import androidx.compose.material.icons.rounded.Palette
+import androidx.compose.material.icons.rounded.Psychology
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.rounded.Storage
+import androidx.compose.material.icons.rounded.Translate
+import androidx.compose.material3.FilledTonalButton
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -23,14 +43,20 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import com.transvibe.app.BuildConfig
-import com.transvibe.app.presentation.TransVibeViewModel
 import com.transvibe.app.persistence.UserPreferences
-import com.transvibe.app.presentation.theme.GlassCard
-import com.transvibe.app.presentation.theme.TransVibeColors
+import com.transvibe.app.presentation.TransVibeViewModel
+import com.transvibe.app.presentation.components.GlassCard
+import com.transvibe.app.presentation.components.ScreenHeroHeader
+import com.transvibe.app.presentation.components.SecondaryActionButton
+import com.transvibe.app.presentation.components.SegmentedPillSelector
 
 @Composable
 fun SettingsScreen(
@@ -38,107 +64,261 @@ fun SettingsScreen(
     isArabic: Boolean,
     onBack: () -> Unit,
     onOpenModels: () -> Unit,
-    onOpenTranslationPacks: () -> Unit
+    onOpenTranslationPacks: () -> Unit,
+    onAbout: () -> Unit
 ) {
     val app = LocalContext.current.applicationContext as Application
     val cacheMb by viewModel.cacheSizeMb.collectAsState()
     val prefs by viewModel.preferences.collectAsState(initial = UserPreferences())
-    val colors = MaterialTheme.colorScheme
     var diagPreview by remember { mutableStateOf<String?>(null) }
+    val scheme = MaterialTheme.colorScheme
 
     LaunchedEffect(Unit) {
         viewModel.refreshCacheSize(app)
     }
 
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .verticalScroll(rememberScrollState())
-            .padding(horizontal = 16.dp, vertical = 20.dp),
+    LazyColumn(
+        modifier = Modifier.fillMaxSize(),
+        contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 12.dp, bottom = 24.dp),
         verticalArrangement = Arrangement.spacedBy(12.dp)
     ) {
-        ScreenHeroHeader(
-            title = if (isArabic) "الإعدادات والخصوصية" else "Settings & Privacy",
-            subtitle = if (isArabic) "التخصيص، التنقل، الخصوصية والموارد" else "Appearance, privacy and resources",
-            icon = Icons.Rounded.Settings,
-            trailing = {
-                OutlinedButton(onClick = onBack) { Text(if (isArabic) "رجوع" else "Back") }
-            }
-        )
+        item {
+            ScreenHeroHeader(
+                title = if (isArabic) "الإعدادات والخصوصية" else "Settings & Privacy",
+                subtitle = if (isArabic) "اللغة، المظهر، الموارد، والتخزين المحلي" else "Language, appearance, models & local storage",
+                icon = Icons.Rounded.Settings
+            )
+        }
 
-        GlassCard(modifier = Modifier.fillMaxWidth()) {
-            Text(if (isArabic) "لغة الواجهة" else "UI Language")
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                OutlinedButton(onClick = { viewModel.setUiLanguage("ar") }, modifier = Modifier.weight(1f)) {
-                    Text("العربية")
+        // Language & Appearance
+        item {
+            SettingsSectionLabel(if (isArabic) "اللغة والمظهر" else "Language & Appearance")
+        }
+
+        item {
+            SettingsCard(
+                title = if (isArabic) "لغة التطبيق" else "Application Language",
+                icon = Icons.Rounded.Language
+            ) {
+                SegmentedPillSelector(
+                    options = listOf("ar" to "العربية", "en" to "English"),
+                    selected = prefs.uiLanguage,
+                    onSelected = { viewModel.setUiLanguage(it) }
+                )
+            }
+        }
+
+        item {
+            SettingsCard(
+                title = if (isArabic) "المظهر والألوان" else "Appearance",
+                icon = Icons.Rounded.Palette
+            ) {
+                SegmentedPillSelector(
+                    options = listOf(
+                        "system" to (if (isArabic) "النظام" else "System"),
+                        "light" to (if (isArabic) "نهاري" else "Light"),
+                        "dark" to (if (isArabic) "ليلي" else "Dark")
+                    ),
+                    selected = prefs.themeMode,
+                    onSelected = { viewModel.setThemeMode(it) }
+                )
+                Text(
+                    text = if (isArabic) "يُحفظ اختيار المظهر تلقائياً ويعمل فوراً." else "Your theme selection is saved automatically.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = scheme.onSurfaceVariant
+                )
+            }
+        }
+
+        // Models & Translation
+        item {
+            SettingsSectionLabel(if (isArabic) "النماذج والترجمة" else "Models & Translation")
+        }
+
+        item {
+            SettingsCard(
+                title = if (isArabic) "الموارد المحلية للذكاء الاصطناعي" else "Offline AI Resources",
+                icon = Icons.Rounded.Psychology
+            ) {
+                Text(
+                    text = if (isArabic) "إدارة النماذج السبعة المعتمدة وحزم الترجمة المحلية دون رفع أي بيانات." else "Manage the 7 supported ASR models and on-device translation packs.",
+                    style = MaterialTheme.typography.bodySmall,
+                    color = scheme.onSurfaceVariant
+                )
+                FilledTonalButton(
+                    onClick = onOpenModels,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .heightIn(min = 48.dp),
+                    shape = RoundedCornerShape(14.dp)
+                ) {
+                    Icon(Icons.Rounded.Memory, contentDescription = null, modifier = Modifier.size(18.dp))
+                    Text(
+                        text = if (isArabic) "إدارة النماذج السبعة" else "Manage 7 Models",
+                        modifier = Modifier.padding(start = 8.dp),
+                        fontWeight = FontWeight.SemiBold
+                    )
                 }
-                OutlinedButton(onClick = { viewModel.setUiLanguage("en") }, modifier = Modifier.weight(1f)) {
-                    Text("English")
+                SecondaryActionButton(
+                    text = if (isArabic) "حزم الترجمة المحلية (ML Kit)" else "Offline Translation Packs",
+                    onClick = onOpenTranslationPacks,
+                    icon = Icons.Rounded.Translate,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
+        // Storage & Diagnostics
+        item {
+            SettingsSectionLabel(if (isArabic) "التخزين والتشخيص" else "Storage & Diagnostics")
+        }
+
+        item {
+            SettingsCard(
+                title = if (isArabic) "الملفات المؤقتة والتخزين" else "Temporary Cache & Storage",
+                icon = Icons.Rounded.Storage
+            ) {
+                Surface(
+                    modifier = Modifier.fillMaxWidth(),
+                    shape = RoundedCornerShape(12.dp),
+                    color = scheme.surfaceContainer.copy(alpha = 0.7f)
+                ) {
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 14.dp, vertical = 12.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Text(
+                            text = if (isArabic) "حجم الذاكرة المؤقتة والتجهيز" else "Temp & Staging Cache",
+                            style = MaterialTheme.typography.bodyMedium,
+                            color = scheme.onSurfaceVariant
+                        )
+                        Text(
+                            text = "$cacheMb MB",
+                            style = MaterialTheme.typography.titleSmall,
+                            fontWeight = FontWeight.ExtraBold,
+                            color = scheme.primary
+                        )
+                    }
+                }
+                SecondaryActionButton(
+                    text = if (isArabic) "مسح الملفات المؤقتة" else "Clear Temp Cache",
+                    onClick = { viewModel.clearAppCache(app) },
+                    icon = Icons.Rounded.DeleteSweep,
+                    modifier = Modifier.fillMaxWidth()
+                )
+            }
+        }
+
+        item {
+            SettingsCard(
+                title = if (isArabic) "التقرير التشخيصي المنقّح" else "Redacted Diagnostics",
+                icon = Icons.Rounded.BugReport
+            ) {
+                SecondaryActionButton(
+                    text = if (isArabic) "إنشاء تقرير تشخيصي منقّح" else "Generate Redacted Report",
+                    onClick = { diagPreview = viewModel.buildRedactedDiagnosticText() },
+                    icon = Icons.Rounded.BugReport,
+                    modifier = Modifier.fillMaxWidth()
+                )
+                diagPreview?.let { report ->
+                    Surface(
+                        modifier = Modifier.fillMaxWidth(),
+                        shape = RoundedCornerShape(12.dp),
+                        color = scheme.surfaceContainer
+                    ) {
+                        Text(
+                            text = report,
+                            style = MaterialTheme.typography.bodySmall,
+                            color = scheme.onSurfaceVariant,
+                            modifier = Modifier.padding(12.dp)
+                        )
+                    }
                 }
             }
         }
 
-        GlassCard(modifier = Modifier.fillMaxWidth(), borderColor = colors.primary.copy(alpha = 0.5f)) {
-            Text(if (isArabic) "المظهر والألوان" else "Theme & appearance",
-                style = MaterialTheme.typography.titleMedium, color = colors.onSurface)
-            Text(if (isArabic) "اختر الوضع المناسب، وسيُحفظ اختيارك تلقائيا."
-                else "Choose a theme; your selection is saved automatically.",
-                style = MaterialTheme.typography.bodySmall, color = colors.onSurfaceVariant)
-            Row(horizontalArrangement = Arrangement.spacedBy(4.dp), modifier = Modifier.fillMaxWidth()) {
-                listOf(
-                    Triple("system", if (isArabic) "النظام" else "System", "system"),
-                    Triple("light", if (isArabic) "نهاري" else "Light", "light"),
-                    Triple("dark", if (isArabic) "ليلي" else "Dark", "dark")
-                ).forEach { (mode, label, _) ->
-                    OutlinedButton(
-                        onClick = { viewModel.setThemeMode(mode) },
-                        modifier = Modifier.weight(1f),
-                        border = androidx.compose.foundation.BorderStroke(
-                            if (prefs.themeMode == mode) 2.dp else 1.dp,
-                            if (prefs.themeMode == mode) colors.primary else colors.outlineVariant
-                        ),
-                        contentPadding = androidx.compose.foundation.layout.PaddingValues(horizontal = 3.dp, vertical = 5.dp)
-                    ) { Text(label, maxLines = 1) }
-                }
-            }
+        // About
+        item {
+            SettingsSectionLabel(if (isArabic) "حول التطبيق" else "About")
         }
 
-        GlassCard(modifier = Modifier.fillMaxWidth()) {
-            Text(if (isArabic) "حجم الذاكرة المؤقتة: $cacheMb MB" else "Temp/Staging Cache: $cacheMb MB")
-            OutlinedButton(onClick = { viewModel.clearAppCache(app) }, modifier = Modifier.fillMaxWidth()) {
-                Text(if (isArabic) "مسح الملفات المؤقتة" else "Clear Temp Cache")
-            }
+        item {
+            SettingsCard(
+                title = if (isArabic) "حول TransVibe" else "About TransVibe",
+                icon = Icons.Rounded.Info,
+                onClick = onAbout
+            )
         }
+    }
+}
 
-        OutlinedButton(onClick = onOpenModels, modifier = Modifier.fillMaxWidth()) {
-            Text(if (isArabic) "إدارة النماذج السبعة" else "Manage 7 Models")
-        }
+@Composable
+private fun SettingsSectionLabel(title: String) {
+    Text(
+        text = title,
+        style = MaterialTheme.typography.labelLarge,
+        fontWeight = FontWeight.ExtraBold,
+        color = MaterialTheme.colorScheme.primary,
+        modifier = Modifier.padding(start = 4.dp, top = 6.dp, bottom = 2.dp)
+    )
+}
 
-        OutlinedButton(onClick = onOpenTranslationPacks, modifier = Modifier.fillMaxWidth()) {
-            Text(if (isArabic) "حزم الترجمة المحلية" else "Translation Packs")
-        }
-
-        OutlinedButton(
-            onClick = { diagPreview = viewModel.buildRedactedDiagnosticText() },
-            modifier = Modifier.fillMaxWidth()
+@Composable
+private fun SettingsCard(
+    title: String,
+    icon: ImageVector,
+    onClick: (() -> Unit)? = null,
+    content: @Composable ColumnScope.() -> Unit = {}
+) {
+    val scheme = MaterialTheme.colorScheme
+    GlassCard {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .then(if (onClick != null) Modifier.clickable(role = Role.Button, onClick = onClick) else Modifier)
+                .padding(horizontal = 16.dp, vertical = 14.dp)
+                .animateContentSize(animationSpec = spring(stiffness = Spring.StiffnessLow)),
+            verticalArrangement = Arrangement.spacedBy(12.dp)
         ) {
-            Text(if (isArabic) "إنشاء تقرير تشخيصي منقّح" else "Generate Redacted Diagnostics")
-        }
-
-        diagPreview?.let {
-            GlassCard(modifier = Modifier.fillMaxWidth()) {
-                Text(it, color = androidx.compose.material3.MaterialTheme.colorScheme.onSurfaceVariant)
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(12.dp)
+            ) {
+                Box(
+                    modifier = Modifier
+                        .size(36.dp)
+                        .clip(RoundedCornerShape(11.dp))
+                        .background(scheme.primaryContainer),
+                    contentAlignment = Alignment.Center
+                ) {
+                    Icon(
+                        imageVector = icon,
+                        contentDescription = null,
+                        modifier = Modifier.size(20.dp),
+                        tint = scheme.primary
+                    )
+                }
+                Text(
+                    text = title,
+                    modifier = Modifier.weight(1f),
+                    style = MaterialTheme.typography.titleMedium,
+                    fontWeight = FontWeight.Bold,
+                    color = scheme.onSurface
+                )
+                if (onClick != null) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Rounded.ArrowForward,
+                        contentDescription = null,
+                        tint = scheme.primary,
+                        modifier = Modifier.size(20.dp)
+                    )
+                }
             }
-        }
-
-        GlassCard(modifier = Modifier.fillMaxWidth()) {
-            Text("TransVibe", color = androidx.compose.material3.MaterialTheme.colorScheme.primary)
-            Text("Package: ${BuildConfig.APPLICATION_ID}")
-            Text("Version: ${BuildConfig.VERSION_NAME} (${BuildConfig.VERSION_CODE})")
-            if (BuildConfig.DIAGNOSTIC_NATIVE_ALLOWED) {
-                Text("DEBUG / PREVIEW: وضع تشخيصي؛ بناء التطبيق لا يعني أن محركات التعرف الصوتي تعمل.")
-            }
-            Text(if (isArabic) "معالجة محلية 100% دون رفع ملفات." else "100% on-device offline processing.")
+            content()
         }
     }
 }
