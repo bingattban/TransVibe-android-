@@ -64,6 +64,7 @@ class CoGoFoundationContract(unittest.TestCase):
                 'app/src/main/java/com/transvibe/app/presentation/screens/PlayerPreviewScreen.kt',
                 'app/src/main/java/com/transvibe/app/presentation/screens/TranslationPacksScreen.kt',
                 'app/src/main/java/com/transvibe/app/presentation/screens/VideoPickerScreen.kt',
+                'app/src/main/java/com/transvibe/app/presentation/screens/RecoveryDialog.kt',
                 'app/src/main/java/com/transvibe/app/presentation/screens/ModelDetailsScreen.kt',
                 'app/src/main/java/com/transvibe/app/presentation/screens/HomeScreen.kt',
                 'app/src/main/java/com/transvibe/app/persistence/UserPreferencesStore.kt',

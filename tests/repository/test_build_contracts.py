@@ -171,6 +171,8 @@ class Phase00SourceProtection(unittest.TestCase):
             'app/src/main/java/com/transvibe/app/presentation/screens/ModelDetailsScreen.kt',
             'app/src/main/java/com/transvibe/app/presentation/screens/ResultsEditorScreen.kt',
             'app/src/main/java/com/transvibe/app/presentation/screens/ProcessingSetupScreen.kt',
+            # Owner-approved re-skin of the existing error dialog.
+            'app/src/main/java/com/transvibe/app/presentation/screens/RecoveryDialog.kt',
             'app/src/main/AndroidManifest.xml',
             'settings.gradle.kts',
             'gradle.properties',
