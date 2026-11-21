@@ -17,8 +17,12 @@ class CoGoRuntimeBundlingContract(unittest.TestCase):
     def test_debug_logsender_is_kept_not_disabled(self):
         manifest = read("app/src/main/AndroidManifest.xml")
         bridge = read("app/src/main/java/com/transvibe/app/platform/LogSenderBridge.kt")
-        self.assertIn("android.permission.FOREGROUND_SERVICE_DATA_SYNC", manifest)
         self.assertIn("android.permission.FOREGROUND_SERVICE", manifest)
+        for variant in ("debug", "preview"):
+            variant_manifest = read("app/src/" + variant + "/AndroidManifest.xml")
+            self.assertIn("android.permission.FOREGROUND_SERVICE_DATA_SYNC", variant_manifest)
+            self.assertNotIn("LogSenderInstaller", variant_manifest)
+            self.assertNotIn('tools:node="remove"', variant_manifest)
         self.assertIn("LogSenderBridge", bridge)
         self.assertIn("LOG_SERVICE", bridge)
         self.assertNotIn("tools:node=\"remove\"", manifest)
@@ -39,7 +43,7 @@ class CoGoRuntimeBundlingContract(unittest.TestCase):
         for token in (
             "verifyDebugPackagedRuntime", "verifyPreviewPackagedRuntime",
             "verifyReleasePackagedRuntime", "finalizedBy",
-            "classes(\\\\d+)?\\\\.dex",
+            r"classes(\d+)?\.dex",
             "Lcom/google/mlkit/common/internal/MlKitInitProvider;",
             "Landroidx/core/app/CoreComponentFactory;",
             "Lcom/transvibe/app/MainActivity;",
