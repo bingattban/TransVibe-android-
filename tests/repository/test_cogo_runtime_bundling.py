@@ -33,8 +33,8 @@ class CoGoRuntimeBundlingContract(unittest.TestCase):
         build = read("app/build.gradle.kts")
         self.assertIn("mlkitCommon = \"18.11.0\"", catalog)
         self.assertIn("mlkit-common = { group = \"com.google.mlkit\", name = \"common\"", catalog)
-        self.assertIn("androidx-core = { group = \"androidx.core\", name = \"core\"", catalog)
-        for token in ("implementation(libs.androidx.core)", "implementation(libs.mlkit.common)",
+        self.assertIn("androidx-core-runtime = { group = \"androidx.core\", name = \"core\"", catalog)
+        for token in ("implementation(libs.androidx.core.runtime)", "implementation(libs.mlkit.common)",
                       "implementation(libs.mlkit.translate)", "implementation(libs.mlkit.language.id)"):
             self.assertIn(token, build)
 

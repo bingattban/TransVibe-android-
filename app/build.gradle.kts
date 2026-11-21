@@ -233,7 +233,7 @@ dependencies {
     implementation(libs.androidx.interpolator)
 
     // Direct runtime packaging contracts: do not depend solely on transitively injected AARs.
-    implementation(libs.androidx.core)
+    implementation(libs.androidx.core.runtime)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
