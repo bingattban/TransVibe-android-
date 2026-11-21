@@ -1,5 +1,0 @@
-PHASE 01 INPUT ARCHIVES — SHA256
-928362b02683aeb86f6eadc53cac8c2212f85ff2b3d6a275723363800943d880  TransVibe_Android_Project.zip (original supplied archive; 98 files)
-3752365ec07d7bd9a927fdf87bac96125a7554251d8e057ba6bb127ffb4a57b1  TransVibe_Phase00_Forensic_Full_Source_2026-11-19.zip (Phase00 106-file input)
-7d3a4ac4de1c32b59bc6a4eb8ecb8e612ccd0cf1ae1e99f66902da64df296172  gradle/wrapper/gradle-wrapper.jar (authentic 9.9.0 wrapper JAR)
-Output ZIP checksums are recorded OUTSIDE the ZIP archives in the final answer and separate SHA256SUMS file, avoiding circular file hashes.

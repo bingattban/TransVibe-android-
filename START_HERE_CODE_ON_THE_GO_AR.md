@@ -1,7 +1,8 @@
-# TransVibe — مشروع Code On The Go الأساسي المدمج
+# TransVibe — البناء على Code On The Go
 
-افتح المجلد `TransVibe/` الذي يحتوي مباشرة على `settings.gradle.kts` من واجهة **Code On The Go**، ثم اضغط **Build**. يجب عدم استخدام سطر الأوامر.
+افتح جذر المشروع الذي يحتوي مباشرة على `settings.gradle.kts` من واجهة **Code On The Go**، ثم استخدم خيار **Build**. لا تحذف النسخة المثبتة لتجربة نسخة غير مؤكدة.
 
-- اقرأ `phase01/merge/CODE_ON_THE_GO_UI_INSTRUCTIONS_AR.md` قبل التثبيت.
-- تقرير الدمج: `phase01/merge/COGO_FOUNDATION_MERGE_REPORT_AR.md`.
-- النسخة الإنتاجية لم تعتمد بعد؛ لا تحذف النسخة المثبتة. إن توفر خيار Preview، استخدمه للتجربة.
+- متطلبات البناء والاعتماديات: `CODE_ON_THE_GO_BUILD.md`.
+- التحقق من البناء والاختبار على الهاتف: `phase01/completion/COTG_VERIFICATION_GUIDE_AR.md`.
+- للتشغيل التجريبي استخدم متغير `Preview` عند توفره، ولا تعتبر نجاح البناء إثباتا لنجاح التعرف على الصوت على الهاتف.
+- ملفات المكتبة الأصلية تحت `app/libs/` ضرورية وتشمل بيانات إثبات مصدرها. لا تحذفها.
