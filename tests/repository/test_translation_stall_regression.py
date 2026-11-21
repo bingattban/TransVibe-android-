@@ -28,7 +28,10 @@ class TranslationStallRegression(unittest.TestCase):
         self.assertIn("warningMessage", orchestrator)
         self.assertIn("JobState.FAILED", screen)
         self.assertIn("onOpenResults", screen)
-        self.assertIn("stageLabel", screen)
+        # Current Compose UI renders the current stage through the pipeline
+        # timeline and preserves error visibility and recoverability.
+        self.assertIn("PipelineTimelineCard(", screen)
+        self.assertIn("ProcessingErrorBanner(", screen)
         self.assertIn("SystemClock.elapsedRealtime()", screen)
 
     def test_no_false_completed_before_translation(self):

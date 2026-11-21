@@ -1,7 +1,19 @@
 package com.transvibe.app.presentation.navigation
 
+import android.app.Activity
+import androidx.activity.compose.BackHandler
 import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.ExitTransition
 import androidx.compose.animation.animateColorAsState
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.expandVertically
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
+import androidx.compose.animation.shrinkVertically
+import androidx.compose.animation.slideInHorizontally
+import androidx.compose.animation.slideOutHorizontally
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -9,19 +21,13 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.RowScope
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.sizeIn
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.ui.Alignment
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.semantics.Role
-import androidx.compose.ui.semantics.role
-import androidx.compose.ui.semantics.selected
-import androidx.compose.ui.semantics.semantics
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History as FilledHistory
 import androidx.compose.material.icons.filled.Home as FilledHome
 import androidx.compose.material.icons.filled.Settings as FilledSettings
@@ -30,30 +36,31 @@ import androidx.compose.material.icons.outlined.History as OutlinedHistory
 import androidx.compose.material.icons.outlined.Home as OutlinedHome
 import androidx.compose.material.icons.outlined.Settings as OutlinedSettings
 import androidx.compose.material.icons.outlined.Tune as OutlinedTune
-import androidx.compose.animation.fadeIn
-import androidx.compose.animation.fadeOut
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.Settings
-import androidx.compose.material.icons.filled.Tune
+import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.NavigationBarItemDefaults
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
-import androidx.compose.material3.Scaffold
+import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.semantics.Role
+import androidx.compose.ui.semantics.role
+import androidx.compose.ui.semantics.selected
+import androidx.compose.ui.semantics.semantics
+import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
@@ -61,7 +68,9 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.transvibe.app.domain.JobState
 import com.transvibe.app.presentation.TransVibeViewModel
+import com.transvibe.app.presentation.screens.AboutScreen
 import com.transvibe.app.presentation.screens.BenchmarkScreen
 import com.transvibe.app.presentation.screens.HistoryScreen
 import com.transvibe.app.presentation.screens.HomeScreen
@@ -92,6 +101,7 @@ object Routes {
     const val HISTORY = "history"
     const val BENCHMARK = "benchmark"
     const val SETTINGS = "settings"
+    const val ABOUT = "about"
 }
 
 @Composable
@@ -103,11 +113,27 @@ fun TransVibeNavGraph(
 ) {
     val navController = rememberNavController()
     val errorMsg by viewModel.recoveryError.collectAsState()
+    val progress by viewModel.processingProgress.collectAsState()
     val backStack by navController.currentBackStackEntryAsState()
     val currentRoute = backStack?.destination?.route
-    val topLevelRoutes = setOf(Routes.HOME, Routes.MODELS, Routes.HISTORY, Routes.SETTINGS)
+    val activity = LocalContext.current as? Activity
+    var showExitConfirmation by remember { mutableStateOf(false) }
+
+    val activeProcessing = progress?.state in setOf(
+        JobState.CREATED,
+        JobState.QUEUED,
+        JobState.INSPECTING,
+        JobState.DECODING,
+        JobState.RECOGNIZING,
+        JobState.TRANSLATING,
+        JobState.FINALIZING
+    )
+
+    val topLevelRoutes = setOf(Routes.HOME, Routes.MODELS, Routes.HISTORY, Routes.SETTINGS, Routes.ABOUT)
     val openSection: (String) -> Unit = { destination ->
-        if (currentRoute != destination) {
+        if (currentRoute == Routes.ABOUT && destination == Routes.SETTINGS) {
+            navController.popBackStack(Routes.SETTINGS, false)
+        } else if (currentRoute != destination) {
             navController.navigate(destination) {
                 popUpTo(Routes.HOME) { saveState = true }
                 launchSingleTop = true
@@ -121,169 +147,215 @@ fun TransVibeNavGraph(
         else -> Routes.WELCOME
     }
 
-    Scaffold(
-        containerColor = MaterialTheme.colorScheme.background,
-        bottomBar = {
-            AnimatedVisibility(
-                visible = currentRoute in topLevelRoutes,
-                enter = fadeIn(animationSpec = tween(200)),
-                exit = fadeOut(animationSpec = tween(160))
+    BackHandler(enabled = currentRoute == Routes.HOME && !showExitConfirmation) {
+        showExitConfirmation = true
+    }
+
+    if (showExitConfirmation) {
+        AlertDialog(
+            onDismissRequest = { showExitConfirmation = false },
+            title = {
+                Text(
+                    text = if (isArabic) "تأكيد الخروج" else "Exit TransVibe?",
+                    fontWeight = FontWeight.Bold
+                )
+            },
+            text = {
+                Text(
+                    if (isArabic) "هل تريد إغلاق التطبيق الآن؟" else "Do you want to close the app now?"
+                )
+            },
+            confirmButton = {
+                TextButton(onClick = { showExitConfirmation = false; activity?.finish() }) {
+                    Text(if (isArabic) "خروج" else "Exit", fontWeight = FontWeight.Bold)
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showExitConfirmation = false }) {
+                    Text(if (isArabic) "إلغاء" else "Cancel")
+                }
+            },
+            shape = RoundedCornerShape(24.dp)
+        )
+    }
+
+    TransVibeBackground {
+        Scaffold(
+            containerColor = Color.Transparent,
+            bottomBar = {
+                AnimatedVisibility(
+                    visible = currentRoute in topLevelRoutes,
+                    enter = expandVertically(animationSpec = tween(250), expandFrom = Alignment.Bottom) + fadeIn(animationSpec = tween(180)),
+                    exit = shrinkVertically(animationSpec = tween(250), shrinkTowards = Alignment.Bottom) + fadeOut(animationSpec = tween(180))
+                ) {
+                    TransVibeBottomNavigation(
+                        currentRoute = currentRoute,
+                        isArabic = isArabic,
+                        hasProcessingBadge = activeProcessing && currentRoute != Routes.HOME,
+                        onNavigate = openSection
+                    )
+                }
+            }
+        ) { innerPadding ->
+            NavHost(
+                navController = navController,
+                startDestination = startDest,
+                modifier = Modifier.padding(innerPadding),
+                enterTransition = { defaultEnterTransition() },
+                exitTransition = { defaultExitTransition() },
+                popEnterTransition = { defaultPopEnterTransition() },
+                popExitTransition = { defaultPopExitTransition() }
             ) {
-                TransVibeBottomNavigation(
-                    currentRoute = currentRoute,
-                    isArabic = isArabic,
-                    onNavigate = openSection
-                )
-            }
-        }
-    ) { innerPadding ->
-        TransVibeBackground {
-        NavHost(
-            navController = navController,
-            startDestination = startDest,
-            modifier = Modifier.padding(innerPadding)
-        ) {
-            composable(Routes.WELCOME) {
-                WelcomeScreen(
-                    isArabic = isArabic,
-                    onSelectLanguage = { viewModel.setUiLanguage(it) },
-                    onContinue = {
-                        viewModel.completeOnboarding()
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.WELCOME) { inclusive = true }
+                composable(Routes.WELCOME) {
+                    WelcomeScreen(
+                        isArabic = isArabic,
+                        onSelectLanguage = { viewModel.setUiLanguage(it) },
+                        onContinue = {
+                            viewModel.completeOnboarding()
+                            navController.navigate(Routes.HOME) {
+                                popUpTo(Routes.WELCOME) { inclusive = true }
+                            }
                         }
-                    }
-                )
-            }
-            composable(Routes.HOME) {
-                HomeScreen(
-                    viewModel = viewModel,
-                    isArabic = isArabic,
-                    onNewVideo = { navController.navigate(Routes.PICKER) },
-                    onModels = { navController.navigate(Routes.MODELS) },
-                    onHistory = { navController.navigate(Routes.HISTORY) },
-                    onSettings = { navController.navigate(Routes.SETTINGS) },
-                    onBenchmark = { navController.navigate(Routes.BENCHMARK) },
-                    onOpenJob = { jobId ->
-                        viewModel.loadJobCues(jobId)
-                        navController.navigate("results/$jobId")
-                    }
-                )
-            }
-            composable(Routes.MODELS) {
-                ModelLibraryScreen(
-                    viewModel = viewModel,
-                    isArabic = isArabic,
-                    onBack = { navController.popBackStack() },
-                    onModelClick = { modelId -> navController.navigate("model_details/$modelId") }
-                )
-            }
-            composable(
-                Routes.MODEL_DETAILS,
-                arguments = listOf(navArgument("modelId") { type = NavType.StringType })
-            ) { backStack ->
-                val modelId = backStack.arguments?.getString("modelId") ?: ""
-                ModelDetailsScreen(
-                    modelId = modelId,
-                    viewModel = viewModel,
-                    isArabic = isArabic,
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.TRANSLATION_PACKS) {
-                TranslationPacksScreen(
-                    viewModel = viewModel,
-                    isArabic = isArabic,
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.PICKER) {
-                VideoPickerScreen(
-                    viewModel = viewModel,
-                    isArabic = isArabic,
-                    onBack = { navController.popBackStack() },
-                    onProceedToSetup = { navController.navigate(Routes.SETUP) }
-                )
-            }
-            composable(Routes.SETUP) {
-                ProcessingSetupScreen(
-                    viewModel = viewModel,
-                    isArabic = isArabic,
-                    onBack = { navController.popBackStack() },
-                    onOpenModels = { navController.navigate(Routes.MODELS) },
-                    onOpenTranslationPacks = { navController.navigate(Routes.TRANSLATION_PACKS) },
-                    onStartProcessing = { navController.navigate(Routes.PROCESSING) }
-                )
-            }
-            composable(Routes.PROCESSING) {
-                ProcessingScreen(
-                    viewModel = viewModel,
-                    isArabic = isArabic,
-                    onBackHome = {
-                        navController.navigate(Routes.HOME) {
-                            popUpTo(Routes.HOME) { inclusive = true }
+                    )
+                }
+                composable(Routes.HOME) {
+                    HomeScreen(
+                        viewModel = viewModel,
+                        isArabic = isArabic,
+                        onNewVideo = { navController.navigate(Routes.PICKER) },
+                        onSetup = { navController.navigate(Routes.SETUP) },
+                        onModels = { openSection(Routes.MODELS) },
+                        onHistory = { openSection(Routes.HISTORY) },
+                        onSettings = { openSection(Routes.SETTINGS) },
+                        onBenchmark = { navController.navigate(Routes.BENCHMARK) },
+                        onOpenProcessing = { navController.navigate(Routes.PROCESSING) { launchSingleTop = true } },
+                        onOpenJob = { jobId ->
+                            viewModel.loadJobCues(jobId)
+                            navController.navigate("results/$jobId")
                         }
-                    },
-                    onOpenResults = { jobId ->
-                        navController.navigate("results/$jobId") {
-                            popUpTo(Routes.HOME)
+                    )
+                }
+                composable(Routes.MODELS) {
+                    ModelLibraryScreen(
+                        viewModel = viewModel,
+                        isArabic = isArabic,
+                        onBack = { navController.popBackStack() },
+                        onModelClick = { modelId -> navController.navigate("model_details/$modelId") }
+                    )
+                }
+                composable(
+                    Routes.MODEL_DETAILS,
+                    arguments = listOf(navArgument("modelId") { type = NavType.StringType })
+                ) { entry ->
+                    val modelId = entry.arguments?.getString("modelId") ?: ""
+                    ModelDetailsScreen(
+                        modelId = modelId,
+                        viewModel = viewModel,
+                        isArabic = isArabic,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.TRANSLATION_PACKS) {
+                    TranslationPacksScreen(
+                        viewModel = viewModel,
+                        isArabic = isArabic,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.PICKER) {
+                    VideoPickerScreen(
+                        viewModel = viewModel,
+                        isArabic = isArabic,
+                        onBack = { navController.popBackStack() },
+                        onProceedToSetup = { navController.navigate(Routes.SETUP) }
+                    )
+                }
+                composable(Routes.SETUP) {
+                    ProcessingSetupScreen(
+                        viewModel = viewModel,
+                        isArabic = isArabic,
+                        onBack = { navController.popBackStack() },
+                        onOpenModels = { openSection(Routes.MODELS) },
+                        onOpenTranslationPacks = { navController.navigate(Routes.TRANSLATION_PACKS) },
+                        onStartProcessing = { navController.navigate(Routes.PROCESSING) }
+                    )
+                }
+                composable(Routes.PROCESSING) {
+                    ProcessingScreen(
+                        viewModel = viewModel,
+                        isArabic = isArabic,
+                        onBackHome = {
+                            navController.navigate(Routes.HOME) {
+                                popUpTo(Routes.HOME) { inclusive = true }
+                            }
+                        },
+                        onOpenResults = { jobId ->
+                            navController.navigate("results/$jobId") {
+                                popUpTo(Routes.HOME)
+                            }
                         }
-                    }
-                )
+                    )
+                }
+                composable(
+                    Routes.RESULTS,
+                    arguments = listOf(navArgument("jobId") { type = NavType.StringType })
+                ) { entry ->
+                    val jobId = entry.arguments?.getString("jobId") ?: ""
+                    ResultsEditorScreen(
+                        jobId = jobId,
+                        viewModel = viewModel,
+                        isArabic = isArabic,
+                        onBack = { navController.popBackStack() },
+                        onPreviewPlayer = { navController.navigate("player/$jobId") }
+                    )
+                }
+                composable(
+                    Routes.PLAYER,
+                    arguments = listOf(navArgument("jobId") { type = NavType.StringType })
+                ) { entry ->
+                    val previewJobId = entry.arguments?.getString("jobId") ?: ""
+                    PlayerPreviewScreen(
+                        jobId = previewJobId,
+                        viewModel = viewModel,
+                        isArabic = isArabic,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.HISTORY) {
+                    HistoryScreen(
+                        viewModel = viewModel,
+                        isArabic = isArabic,
+                        onBack = { navController.popBackStack() },
+                        onOpenJob = { jobId ->
+                            viewModel.loadJobCues(jobId)
+                            navController.navigate("results/$jobId")
+                        }
+                    )
+                }
+                composable(Routes.BENCHMARK) {
+                    BenchmarkScreen(
+                        viewModel = viewModel,
+                        isArabic = isArabic,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
+                composable(Routes.SETTINGS) {
+                    SettingsScreen(
+                        viewModel = viewModel,
+                        isArabic = isArabic,
+                        onBack = { navController.popBackStack() },
+                        onOpenModels = { openSection(Routes.MODELS) },
+                        onOpenTranslationPacks = { navController.navigate(Routes.TRANSLATION_PACKS) },
+                        onAbout = { navController.navigate(Routes.ABOUT) { launchSingleTop = true } }
+                    )
+                }
+                composable(Routes.ABOUT) {
+                    AboutScreen(
+                        isArabic = isArabic,
+                        onBack = { navController.popBackStack() }
+                    )
+                }
             }
-            composable(
-                Routes.RESULTS,
-                arguments = listOf(navArgument("jobId") { type = NavType.StringType })
-            ) { backStack ->
-                val jobId = backStack.arguments?.getString("jobId") ?: ""
-                ResultsEditorScreen(
-                    jobId = jobId,
-                    viewModel = viewModel,
-                    isArabic = isArabic,
-                    onBack = { navController.popBackStack() },
-                    onPreviewPlayer = { navController.navigate("player/$jobId") }
-                )
-            }
-            composable(
-                Routes.PLAYER,
-                arguments = listOf(navArgument("jobId") { type = NavType.StringType })
-            ) { backStack ->
-                val previewJobId = backStack.arguments?.getString("jobId") ?: ""
-                PlayerPreviewScreen(
-                    jobId = previewJobId,
-                    viewModel = viewModel,
-                    isArabic = isArabic,
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.HISTORY) {
-                HistoryScreen(
-                    viewModel = viewModel,
-                    isArabic = isArabic,
-                    onBack = { navController.popBackStack() },
-                    onOpenJob = { jobId ->
-                        viewModel.loadJobCues(jobId)
-                        navController.navigate("results/$jobId")
-                    }
-                )
-            }
-            composable(Routes.BENCHMARK) {
-                BenchmarkScreen(
-                    viewModel = viewModel,
-                    isArabic = isArabic,
-                    onBack = { navController.popBackStack() }
-                )
-            }
-            composable(Routes.SETTINGS) {
-                SettingsScreen(
-                    viewModel = viewModel,
-                    isArabic = isArabic,
-                    onBack = { navController.popBackStack() },
-                    onOpenModels = { navController.navigate(Routes.MODELS) },
-                    onOpenTranslationPacks = { navController.navigate(Routes.TRANSLATION_PACKS) }
-                )
-            }
-        }
         }
     }
 
@@ -296,16 +368,18 @@ fun TransVibeNavGraph(
     }
 }
 
-/** Original owner's four-section navigation silhouette and animated tabs. */
 @Composable
 private fun TransVibeBottomNavigation(
     currentRoute: String?,
     isArabic: Boolean,
+    hasProcessingBadge: Boolean,
     onNavigate: (String) -> Unit
 ) {
     val scheme = MaterialTheme.colorScheme
     Surface(
-        modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 10.dp),
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(horizontal = 16.dp, vertical = 10.dp),
         shape = RoundedCornerShape(26.dp),
         color = scheme.surfaceContainer,
         tonalElevation = 4.dp,
@@ -313,13 +387,40 @@ private fun TransVibeBottomNavigation(
         border = BorderStroke(1.dp, scheme.outlineVariant.copy(alpha = 0.55f))
     ) {
         Row(
-            modifier = Modifier.fillMaxWidth().padding(horizontal = 6.dp, vertical = 6.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(horizontal = 6.dp, vertical = 6.dp),
             verticalAlignment = Alignment.CenterVertically
         ) {
-            AppNavItem(currentRoute == Routes.HOME, { onNavigate(Routes.HOME) }, Icons.Filled.FilledHome, Icons.Outlined.OutlinedHome, if (isArabic) "الرئيسية" else "Home")
-            AppNavItem(currentRoute == Routes.MODELS, { onNavigate(Routes.MODELS) }, Icons.Filled.FilledTune, Icons.Outlined.OutlinedTune, if (isArabic) "النماذج" else "Models")
-            AppNavItem(currentRoute == Routes.HISTORY, { onNavigate(Routes.HISTORY) }, Icons.Filled.FilledHistory, Icons.Outlined.OutlinedHistory, if (isArabic) "السجل" else "History")
-            AppNavItem(currentRoute == Routes.SETTINGS, { onNavigate(Routes.SETTINGS) }, Icons.Filled.FilledSettings, Icons.Outlined.OutlinedSettings, if (isArabic) "الإعدادات" else "Settings")
+            AppNavItem(
+                selected = currentRoute == Routes.HOME,
+                onClick = { onNavigate(Routes.HOME) },
+                selectedIcon = Icons.Filled.FilledHome,
+                unselectedIcon = Icons.Outlined.OutlinedHome,
+                label = if (isArabic) "الرئيسية" else "Home",
+                hasBadge = hasProcessingBadge
+            )
+            AppNavItem(
+                selected = currentRoute == Routes.MODELS,
+                onClick = { onNavigate(Routes.MODELS) },
+                selectedIcon = Icons.Filled.FilledTune,
+                unselectedIcon = Icons.Outlined.OutlinedTune,
+                label = if (isArabic) "النماذج" else "Models"
+            )
+            AppNavItem(
+                selected = currentRoute == Routes.HISTORY,
+                onClick = { onNavigate(Routes.HISTORY) },
+                selectedIcon = Icons.Filled.FilledHistory,
+                unselectedIcon = Icons.Outlined.OutlinedHistory,
+                label = if (isArabic) "السجل" else "History"
+            )
+            AppNavItem(
+                selected = currentRoute == Routes.SETTINGS || currentRoute == Routes.ABOUT,
+                onClick = { onNavigate(Routes.SETTINGS) },
+                selectedIcon = Icons.Filled.FilledSettings,
+                unselectedIcon = Icons.Outlined.OutlinedSettings,
+                label = if (isArabic) "الإعدادات" else "Settings"
+            )
         }
     }
 }
@@ -390,3 +491,14 @@ private fun RowScope.AppNavItem(
     }
 }
 
+private fun defaultEnterTransition(): EnterTransition =
+    fadeIn(tween(220)) + slideInHorizontally(tween(220), initialOffsetX = { fullWidth -> fullWidth / 14 })
+
+private fun defaultExitTransition(): ExitTransition =
+    fadeOut(tween(180)) + slideOutHorizontally(tween(220), targetOffsetX = { fullWidth -> -fullWidth / 14 })
+
+private fun defaultPopEnterTransition(): EnterTransition =
+    fadeIn(tween(220)) + slideInHorizontally(tween(220), initialOffsetX = { fullWidth -> -fullWidth / 14 })
+
+private fun defaultPopExitTransition(): ExitTransition =
+    fadeOut(tween(180)) + slideOutHorizontally(tween(220), targetOffsetX = { fullWidth -> fullWidth / 14 })

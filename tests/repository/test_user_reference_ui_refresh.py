@@ -39,6 +39,6 @@ class UserReferenceUI(unittest.TestCase):
             self.assertIn(token,s)
     def test_welcome_keeps_language_and_onboarding(self):
         s=read("app/src/main/java/com/transvibe/app/presentation/screens/WelcomeScreen.kt")
-        for token in ("R.drawable.transvibe_welcome_logo",'onSelectLanguage("ar")','onSelectLanguage("en")',"onContinue"):
+        for token in ("R.drawable.transvibe_welcome_logo",'options = listOf("ar" to "العربية", "en" to "English")','onSelected = onSelectLanguage',"onContinue"):
             self.assertIn(token,s)
 if __name__=="__main__": unittest.main()

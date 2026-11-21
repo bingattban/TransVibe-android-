@@ -44,6 +44,7 @@ import androidx.compose.ui.unit.dp
 import com.transvibe.app.R
 import com.transvibe.app.presentation.components.GlassCard
 import com.transvibe.app.presentation.components.PrimaryActionButton
+import com.transvibe.app.presentation.components.SegmentedPillSelector
 
 /** First-launch welcome screen. */
 @Composable
@@ -200,21 +201,12 @@ fun WelcomeScreen(
             )
         }
 
-        // Preserve the new application's explicit language selection without
-        // altering the original welcome artwork, layout, feature cards or CTA.
-        Row(
-            modifier = Modifier.fillMaxWidth().padding(top = 6.dp),
-            horizontalArrangement = Arrangement.spacedBy(10.dp)
-        ) {
-            androidx.compose.material3.OutlinedButton(
-                onClick = { onSelectLanguage("ar") },
-                modifier = Modifier.weight(1f)
-            ) { Text("العربية") }
-            androidx.compose.material3.OutlinedButton(
-                onClick = { onSelectLanguage("en") },
-                modifier = Modifier.weight(1f)
-            ) { Text("English") }
-        }
+        SegmentedPillSelector(
+            options = listOf("ar" to "العربية", "en" to "English"),
+            selected = if (isArabic) "ar" else "en",
+            onSelected = onSelectLanguage,
+            modifier = Modifier.padding(top = 8.dp)
+        )
 
         PrimaryActionButton(
             text = stringResource(R.string.welcome_start_now),
@@ -222,7 +214,7 @@ fun WelcomeScreen(
             icon = Icons.AutoMirrored.Rounded.ArrowForward,
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(top = 12.dp)
+                .padding(top = 10.dp)
         )
     }
 }

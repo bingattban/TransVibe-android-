@@ -78,7 +78,9 @@ class BuildContracts(unittest.TestCase):
         manifest = source('app/src/main/AndroidManifest.xml')
         self.assertIn('applicationId = "com.transvibe.app"', build)
         self.assertIn('applicationIdSuffix = ".preview"', build)
-        self.assertIn('DIAGNOSTIC_NATIVE_ALLOWED', settings)
+        about = source('app/src/main/java/com/transvibe/app/presentation/screens/AboutScreen.kt')
+        self.assertIn('DIAGNOSTIC_NATIVE_ALLOWED', about)
+        self.assertIn('onClick = onAbout', settings)
         self.assertIn('${applicationId}.fileprovider', manifest)
         self.assertNotIn('android:sharedUserId', manifest)
 
@@ -169,6 +171,8 @@ class Phase00SourceProtection(unittest.TestCase):
             'app/src/main/java/com/transvibe/app/presentation/screens/ModelDetailsScreen.kt',
             'app/src/main/java/com/transvibe/app/presentation/screens/ResultsEditorScreen.kt',
             'app/src/main/java/com/transvibe/app/presentation/screens/ProcessingSetupScreen.kt',
+            # Owner-approved re-skin of the existing error dialog.
+            'app/src/main/java/com/transvibe/app/presentation/screens/RecoveryDialog.kt',
             'app/src/main/AndroidManifest.xml',
             'settings.gradle.kts',
             'gradle.properties',
