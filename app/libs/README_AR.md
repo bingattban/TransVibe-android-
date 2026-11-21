@@ -24,3 +24,13 @@ TransVibe/
 - إذا كان Debug يستخدم `com.transvibe.app` وتوقيعه يختلف عن المثبت، فقد يفشل الاستبدال دون المساس بالنسخة القديمة؛ استخدم Preview `com.transvibe.app.preview` إن كان خيارها ظاهرا.
 
 **قيود التحقق:** التحقق من ELF والـ AAR شكلي فقط، ولا يثبت أن ملفات JNI المضمنة تحتوي الرموز الصحيحة أو أنها تعمل دون اعتماديات مفقودة. النجاح النهائي يحتاج بناء APK وتثبيته واختبار ASR الحقيقي على هاتف ARM64.
+
+
+## Kotlin/AndroidX/ML Kit libraries
+
+The repository always includes the verified ARM64 Whisper JNI and
+native-provenance.json. AndroidX Core and ML Kit Common/Translate/Language ID
+are declared explicitly and pinned by gradle/libs.versions.toml and are
+merged into APK DEX files by Gradle. These dependencies are not copied to
+app/libs as independent, potentially duplicate AARs. Code On The Go's LogSender
+is provided by the IDE's own Debug/Preview plugin and must remain enabled.

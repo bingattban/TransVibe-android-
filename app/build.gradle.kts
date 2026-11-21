@@ -232,6 +232,8 @@ dependencies {
     implementation(libs.androidx.startup.runtime)
     implementation(libs.androidx.interpolator)
 
+    // Direct runtime packaging contracts: do not depend solely on transitively injected AARs.
+    implementation(libs.androidx.core)
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.androidx.lifecycle.viewmodel.compose)
@@ -258,6 +260,7 @@ dependencies {
     implementation(libs.androidx.media3.ui)
     implementation(libs.androidx.media3.common)
 
+    implementation(libs.mlkit.common)
     implementation(libs.mlkit.translate)
     implementation(libs.mlkit.language.id)
 
@@ -405,4 +408,118 @@ tasks.matching {
     it.name in setOf("preReleaseBuild", "externalNativeBuildRelease", "assembleRelease", "bundleRelease")
 }.configureEach {
     dependsOn(verifyReleaseNativeDependencies)
+}
+
+
+// Each installable APK must contain the *defined* AndroidX/ML Kit classes,
+// not merely names mentioned in an AndroidManifest. This runs on the CoGo
+// JVM too: no Python, adb, aapt, a desktop NDK or external tooling required.
+fun dexDefinedClassDescriptors(bytes: ByteArray): Set<String> {
+    require(bytes.size >= 112 && String(bytes, 0, 4, Charsets.US_ASCII) == "dex\n") {
+        "APK RUNTIME CHECK FAILED: invalid DEX header"
+    }
+    fun u32(at: Int): Int {
+        require(at >= 0 && at.toLong() + 4 <= bytes.size.toLong()) {
+            "APK RUNTIME CHECK FAILED: corrupt DEX offset"
+        }
+        return (bytes[at].toInt() and 255) or
+            ((bytes[at + 1].toInt() and 255) shl 8) or
+            ((bytes[at + 2].toInt() and 255) shl 16) or
+            ((bytes[at + 3].toInt() and 255) shl 24)
+    }
+    val stringIdsSize = u32(0x38)
+    val stringIdsOffset = u32(0x3c)
+    val typeIdsSize = u32(0x40)
+    val typeIdsOffset = u32(0x44)
+    val classDefsSize = u32(0x60)
+    val classDefsOffset = u32(0x64)
+    require(stringIdsSize >= 0 && typeIdsSize >= 0 && classDefsSize >= 0 &&
+        stringIdsOffset.toLong() + stringIdsSize.toLong() * 4 <= bytes.size &&
+        typeIdsOffset.toLong() + typeIdsSize.toLong() * 4 <= bytes.size &&
+        classDefsOffset.toLong() + classDefsSize.toLong() * 32 <= bytes.size) {
+        "APK RUNTIME CHECK FAILED: truncated DEX tables"
+    }
+    val found = mutableSetOf<String>()
+    for (i in 0 until classDefsSize) {
+        val classIdx = u32(classDefsOffset + i * 32)
+        require(classIdx >= 0 && classIdx < typeIdsSize) {
+            "APK RUNTIME CHECK FAILED: invalid class index in DEX"
+        }
+        val descriptorIdx = u32(typeIdsOffset + classIdx * 4)
+        require(descriptorIdx >= 0 && descriptorIdx < stringIdsSize) {
+            "APK RUNTIME CHECK FAILED: invalid string index in DEX"
+        }
+        var p = u32(stringIdsOffset + descriptorIdx * 4)
+        var lebBytes = 0
+        var current: Int
+        do {
+            require(p in bytes.indices && lebBytes < 5) {
+                "APK RUNTIME CHECK FAILED: invalid DEX string prefix"
+            }
+            current = bytes[p++].toInt() and 255
+            lebBytes++
+        } while ((current and 0x80) != 0)
+        val start = p
+        while (p in bytes.indices && bytes[p] != 0.toByte()) p++
+        require(p in bytes.indices) {
+            "APK RUNTIME CHECK FAILED: unterminated DEX descriptor"
+        }
+        found += String(bytes, start, p - start, Charsets.UTF_8)
+    }
+    return found
+}
+
+listOf(
+    "Debug" to "verifyDebugPackagedRuntime",
+    "Preview" to "verifyPreviewPackagedRuntime",
+    "Release" to "verifyReleasePackagedRuntime"
+).forEach { (variant, verificationName) ->
+    val verification = tasks.register(verificationName) {
+        group = "verification"
+        description = "Reject APKs missing AndroidX, ML Kit, app classes or real ARM64 Whisper"
+        doLast {
+            val output = layout.buildDirectory.dir("outputs/apk/" + variant.lowercase()).get().asFile
+            val apks = output.listFiles()?.filter { it.isFile && it.extension == "apk" } ?: emptyList()
+            check(apks.size == 1) {
+                "APK RUNTIME CHECK FAILED: expected exactly one " + variant + " APK in " + output
+            }
+            ZipFile(apks.single()).use { apk ->
+                val dexPattern = Regex("""classes(\d+)?\.dex""")
+                val dexEntries = apk.entries().asSequence().filter { dexPattern.matches(it.name) }.toList()
+                check(dexEntries.isNotEmpty()) {
+                    "APK RUNTIME CHECK FAILED: no classes*.dex in " + apks.single().name
+                }
+                val defined = mutableSetOf<String>()
+                dexEntries.forEach { entry ->
+                    apk.getInputStream(entry).use { input ->
+                        defined.addAll(dexDefinedClassDescriptors(input.readBytes()))
+                    }
+                }
+                val required = setOf(
+                    "Landroidx/core/app/CoreComponentFactory;",
+                    "Lcom/google/mlkit/common/internal/MlKitInitProvider;",
+                    "Lcom/transvibe/app/MainActivity;",
+                    "Lcom/transvibe/app/TransVibeApplication;"
+                )
+                val missing = required - defined
+                check(missing.isEmpty()) {
+                    "APK RUNTIME CHECK FAILED: missing DEX class definitions: " + missing +
+                        ". Build may succeed but app will crash on startup."
+                }
+                val whisper = apk.getEntry("lib/arm64-v8a/libtransvibe_whisper.so")
+                check(whisper != null && whisper.size > 0L) {
+                    "APK RUNTIME CHECK FAILED: verified ARM64 Whisper JNI missing from APK"
+                }
+                logger.lifecycle(
+                    "APK RUNTIME CHECK PASS: " + variant + ", " +
+                        dexEntries.size + " DEX files, ML Kit, AndroidX and ARM64 Whisper present"
+                )
+            }
+        }
+    }
+    // Code On The Go's Build button normally runs assembleDebug. GitHub also
+    // verifies Preview and Release. A broken APK makes the Gradle build fail.
+    tasks.matching { it.name == "assemble" + variant }.configureEach {
+        finalizedBy(verification)
+    }
 }
