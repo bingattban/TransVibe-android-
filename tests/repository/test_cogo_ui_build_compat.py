@@ -53,13 +53,13 @@ class CodeOnTheGoUIBuildContracts(unittest.TestCase):
         self.assertIn('targetSdk = 35', script)
 
     def test_ui_first_handoff_documents_correct_build_action(self):
-        guide = source('phase01/COTG_UI_ONLY_AR.md')
+        guide = source('CODE_ON_THE_GO_BUILD.md')
         self.assertIn('Build', guide)
         self.assertIn('9.6.1', guide)
         self.assertIn('9.3.1', guide)
         self.assertIn('Preview', guide)
-        self.assertIn('بدون طرفية', guide)
-        self.assertIn('لا تحذف', guide)
+        self.assertIn('No terminal commands', guide)
+        self.assertIn('Do not uninstall', guide)
 
 if __name__ == '__main__':
     unittest.main()

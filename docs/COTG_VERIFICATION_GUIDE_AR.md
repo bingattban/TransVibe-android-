@@ -1,4 +1,4 @@
-> **تنبيه 19 نوفمبر 2026:** هذا الدليل تاريخي. تعليمات البناء المعتمدة حاليا عبر واجهة Code On The Go فقط في `phase01/COTG_UI_ONLY_AR.md`. لا تستخدم أوامر الطرفية الواردة أدناه.
+> **تنبيه 19 نوفمبر 2026:** تعليمات البناء الأساسية من واجهة Code On The Go في `CODE_ON_THE_GO_BUILD.md`. الأوامر أدناه اختيارية فقط إذا توفرت بيئة طرفية مناسبة.
 
 # Phase 01 — خطوات استكمال اختبار البناء على Code On The Go
 
@@ -11,10 +11,10 @@
 - إذا توفر طرفية أو shell، ادخل إلى مجلد `TransVibe` ونفذ:
 
 ```sh
-sh phase01/validate_on_code_on_the_go.sh
+sh scripts/validate_on_code_on_the_go.sh
 ```
 
-- النتائج والسجلات في `phase01/cotg_device_logs/`، وأهمها `PHASE01_BUILD_RESULTS.txt` وسجلات كل Gradle task.
+- النتائج والسجلات في `scripts/cotg_device_logs/`، وأهمها `ANDROID_BUILD_RESULTS.txt` وسجلات كل Gradle task.
 - إذا لم يدعم Code On The Go الطرفية، نفذ هذه المهام من واجهته بالترتيب نفسه وسجل مخرجاتها حرفيا:
 
 ```text

@@ -34,7 +34,7 @@ class CoGoFoundationContract(unittest.TestCase):
         self.assertIn('name="app_name">TransVibe</string>',(ROOT/'app/src/main/res/values/strings.xml').read_text())
 
     def test_all_previous_production_sources_preserved(self):
-        manifest=ROOT/'phase01/merge/TRANSVIBE_PREVIOUS_SOURCE_SHA256.csv'
+        manifest=ROOT/'tests/fixtures/TRANSVIBE_PREVIOUS_SOURCE_SHA256.csv'
         with manifest.open(encoding='utf-8',newline='') as src:
             rows=list(csv.DictReader(src))
         self.assertEqual(len(rows),73)
@@ -163,13 +163,15 @@ class CoGoFoundationContract(unittest.TestCase):
                 continue
             self.assertEqual(hashlib.sha256(target.read_bytes()).hexdigest(),item['sha256'],f'Changed source {rel}')
 
-    def test_old_regression_and_phase_reports_preserved(self):
+    def test_regression_and_source_baselines_preserved(self):
         self.assertTrue((ROOT/'app/src/test/java/com/transvibe/app/ZipSecurityValidatorTest.kt').is_file())
-        self.assertTrue((ROOT/'phase00/PHASE00_FORENSIC_REPORT.md').is_file())
-        self.assertTrue((ROOT/'phase01/PHASE01_COGO_GRADLE_ZIPFILE_FIX_REPORT_AR.md').is_file())
+        for filename in ('PHASE00_SOURCE_INVENTORY_SHA256.csv',
+                         'TRANSVIBE_PREVIOUS_SOURCE_SHA256.csv',
+                         'COGO_STARTER_RESOURCES_SHA256.csv'):
+            self.assertTrue((ROOT/'tests/fixtures'/filename).is_file(), filename)
 
     def test_cogo_starter_resources_and_pruned_resources(self):
-        file=ROOT/'phase01/merge/COGO_STARTER_RESOURCES_SHA256.csv'
+        file=ROOT/'tests/fixtures/COGO_STARTER_RESOURCES_SHA256.csv'
         with file.open(encoding='utf-8',newline='') as src:
             rows=list(csv.DictReader(src))
         self.assertGreaterEqual(len(rows),15)

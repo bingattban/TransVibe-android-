@@ -18,4 +18,4 @@
 7. `sensevoice-small-int8.zip` (SenseVoice Small INT8 — `zh, yue, en, ja, ko`)
 
 ## خطوات التجهيز والبناء
-راجع ملف `CODE_ON_THE_GO_BUILD.md` لتشغيل `./scripts/fetch_native_deps.sh` وبناء المشروع عبر Gradle.
+افتح المشروع من واجهة Code On The Go كما هو موضح في `CODE_ON_THE_GO_BUILD.md`. اختبارات المصدر داخل `tests/repository`، وملفات التحقق اللازمة لها داخل `tests/fixtures`. لا تحذف مكتبة ARM64 الموثقة أو ملفات Gradle.

@@ -24,11 +24,11 @@ jobs:
       - name: Require complete app
         run: |
           set -euo pipefail
-          for path in settings.gradle.kts build.gradle.kts app/build.gradle.kts gradlew gradle/wrapper/gradle-wrapper.jar app/src/main/AndroidManifest.xml app/src/main/cpp/whisper_jni.cpp app/src/main/java/com/transvibe/app/nativebridge/WhisperNativeBridge.kt phase01/tests; do
+          for path in settings.gradle.kts build.gradle.kts app/build.gradle.kts gradlew gradle/wrapper/gradle-wrapper.jar app/src/main/AndroidManifest.xml app/src/main/cpp/whisper_jni.cpp app/src/main/java/com/transvibe/app/nativebridge/WhisperNativeBridge.kt tests/repository; do
             test -e "$path" || { echo "::error::Missing $path"; exit 1; }
           done
       - name: Regression suite
-        run: python3 -m unittest discover -s phase01/tests -p 'test_*.py' -v
+        run: python3 -m unittest discover -s tests/repository -p 'test_*.py' -v
 
   unit-tests:
     name: Android JVM tests before APK
