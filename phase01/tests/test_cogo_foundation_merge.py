@@ -168,7 +168,7 @@ class CoGoFoundationContract(unittest.TestCase):
         self.assertTrue((ROOT/'phase00/PHASE00_FORENSIC_REPORT.md').is_file())
         self.assertTrue((ROOT/'phase01/PHASE01_COGO_GRADLE_ZIPFILE_FIX_REPORT_AR.md').is_file())
 
-    def test_cogo_starter_resources_preserved(self):
+    def test_cogo_starter_resources_and_pruned_resources(self):
         file=ROOT/'phase01/merge/COGO_STARTER_RESOURCES_SHA256.csv'
         with file.open(encoding='utf-8',newline='') as src:
             rows=list(csv.DictReader(src))
@@ -193,6 +193,16 @@ class CoGoFoundationContract(unittest.TestCase):
                 self.assertTrue((ROOT/replacement).exists(),
                                 f'Original replacement icon absent: {replacement}')
                 self.assertFalse((ROOT/rel).exists(), f'Obsolete starter icon remains: {rel}')
+                continue
+            # Compose replaces these unused Code On The Go starter artifacts.
+            # Keep original PNG launchers and all still-used resources intact.
+            if rel in {
+                'app/src/main/res/drawable/ic_launcher_background.xml',
+                'app/src/main/res/drawable/ic_launcher_round.webp',
+                'app/src/main/res/drawable-v24/ic_launcher_foreground.xml',
+                'app/src/main/res/layout/activity_main.xml',
+            }:
+                self.assertFalse((ROOT/rel).exists(), f'Unused starter resource still present: {rel}')
                 continue
             actual=ROOT/rel
             self.assertTrue(actual.exists(),rel)
